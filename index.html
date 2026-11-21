@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Personal LMS & Attendance</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-2: #273549;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
+
+    /* Header & Nav */
+    header {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 20;
+    }
+    .header-inner {
+      max-width: 1100px; margin: 0 auto; padding: 14px 18px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .brand { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .clock-box { font-size: 0.9rem; color: var(--muted); text-align: right; }
+    .clock-time { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+
+    nav {
+      max-width: 1100px; margin: 0 auto; padding: 0 18px;
+      display: flex; gap: 6px; overflow-x: auto;
+    }
+    .tab-btn {
+      background: none; border: none; color: var(--muted); padding: 12px 16px;
+      cursor: pointer; font-weight: 600; font-size: 0.92rem; white-space: nowrap;
+      border-bottom: 2px solid transparent; transition: 0.2s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: #818cf8; border-bottom-color: var(--primary); }
+
+    main { max-width: 1100px; margin: 22px auto; padding: 0 18px; }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* Cards & Layout */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px; margin-bottom: 18px;
+    }
+    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+
+    /* Live Banner */
+    .live-banner {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(16, 185, 129, 0.14));
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 20px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .live-banner.idle {
+      background: var(--surface); border-color: var(--border);
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .badge-live { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-up { background: rgba(99, 102, 241, 0.2); color: #c7d2fe; }
+    .badge-done { background: rgba(148, 163, 184, 0.15); color: var(--muted); }
+    .badge-coverup { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .badge-present { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+    .badge-absent { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+
+    /* Lecture Row */
+    .lec-item {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .lec-item.is-now { border-color: var(--primary); box-shadow: 0 0 0 1px rgba(99,102,241,0.4); }
+    .lec-time { font-weight: 700; font-size: 0.95rem; color: #a5b4fc; }
+    .lec-meta { font-size: 0.85rem; color: var(--muted); margin-top: 3px; }
+
+    /* Buttons */
+    .btn {
+      border: none; border-radius: 8px; padding: 8px 14px; font-size: 0.85rem;
+      font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      transition: 0.15s; text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover:not(:disabled) { background: #334155; }
+    .btn-present { background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); }
+    .btn-present.selected, .btn-present:hover:not(:disabled) { background: var(--green); color: #052e16; }
+    .btn-absent { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .btn-absent.selected, .btn-absent:hover:not(:disabled) { background: var(--red); color: #fff; }
+    .btn-sm { padding: 6px 10px; font-size: 0.8rem; }
+
+    /* Progress Bar */
+    .att-card {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
+    }
+    .att-pct { font-size: 1.6rem; font-weight: 800; }
+    .progress-track { height: 7px; background: #0f172a; border-radius: 99px; overflow: hidden; margin-top: 10px; }
+    .progress-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+
+    /* Forms */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+    input, select {
+      width: 100%; background: #0f172a; border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 9px 11px; font-size: 0.9rem;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
+
+    /* LMS */
+    .subject-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .pill {
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+      padding: 9px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.88rem;
+    }
+    .pill.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .file-row {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 9px; margin-bottom: 8px;
+    }
+    .file-name { font-weight: 600; word-break: break-word; }
+    .breadcrumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
+    .crumb { color: #818cf8; cursor: pointer; font-weight: 600; }
+    .crumb:hover { text-decoration: underline; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; }
+
+    /* Modal for File Preview */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50;
+      display: none; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      width: 100%; max-width: 960px; height: 88vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .modal-header {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .modal iframe { flex: 1; width: 100%; border: none; background: #111; }
+
+    /* Toast & Loader */
+    .toast {
+      position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #fff;
+      border: 1px solid var(--primary); padding: 12px 18px; border-radius: 10px;
+      font-size: 0.9rem; z-index: 100; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+    .empty { color: var(--muted); font-size: 0.9rem; padding: 14px 0; text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">🎓 Personal LMS & Attendance</div>
+    <div class="clock-box">
+      <div class="clock-time" id="liveClock">--:--:--</div>
+      <div id="liveDate">Loading...</div>
+    </div>
+  </div>
+  <nav>
+    <button class="tab-btn active" onclick="switchTab('home', this)">🏠 Home</button>
+    <button class="tab-btn" onclick="switchTab('lms', this)">📂 LMS Materials</button>
+    <button class="tab-btn" onclick="switchTab('coverup', this)">➕ Cover-Up Lectures</button>
+    <button class="tab-btn" onclick="switchTab('custom', this)">📝 Custom Attendance</button>
+  </nav>
+</header>
+
+<main>
+  <!-- HOME VIEW -->
+  <section id="view-home" class="view active">
+    <div id="liveBanner" class="live-banner idle">
+      <div>Loading today's schedule...</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <span>📅 Today's Lectures (<span id="todayLabel"></span>)</span>
+        <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">🔄 Sync</button>
+      </div>
+      <div id="todayLecturesList"><div class="empty">Loading...</div></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">📊 Subject-Wise Attendance</div>
+      <div id="attendanceGrid" class="grid-3"><div class="empty">Loading...</div></div>
+    </div>
+  </section>
+
+  <!-- LMS VIEW -->
+  <section id="view-lms" class="view">
+    <div class="card">
+      <div class="section-title">
+        <span>📚 Select Subject</span>
+        <button class="btn btn-ghost btn-sm" id="refreshDriveBtn" onclick="refreshCurrentDrive()" style="display:none;">🔄 Refresh Files</button>
+      </div>
+      <div id="subjectPills" class="subject-pills"></div>
+      <div id="lmsContent">
+        <div class="empty">Select a subject above to browse its live Google Drive materials.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COVER-UP VIEW -->
+  <section id="view-coverup" class="view">
+    <div class="card">
+      <div class="section-title">➕ Add Cover-Up Lecture</div>
+      <form id="coverupForm" onsubmit="submitCoverup(event)">
+        <div class="form-grid">
+          <div>
+            <label>Subject</label>
+            <select id="cuSubject" required></select>
+          </div>
+          <div>
+            <label>Date</label>
+            <input type="date" id="cuDate" required />
+          </div>
+          <div>
+            <label>Start Time</label>
+            <input type="time" id="cuStart" required />
+          </div>
+          <div>
+            <label>End Time</label>
+            <input type="time" id="cuEnd" required />
+          </div>
+          <div>
+            <label>Note / Location (Optional)</label>
+            <input type="text" id="cuNote" placeholder="e.g. Extra Lab / Hall C" />
+          </div>
+        </div>
+        <div style="margin-top: 14px;">
+          <button type="submit" class="btn btn-primary" id="cuSubmitBtn">Add Cover-Up Lecture</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="section-title">📌 Scheduled Cover-Up Lectures</div>
+      <div id="coverupList"><div class="empty">No cover-up lectures added yet.</div></div>
+    </div>
+  </section>
+
+  <!-- CUSTOM / PAST ATTENDANCE VIEW -->
+  <section id="view-custom" class="view">
+    <div class="card">
+      <div class="section-title">📝 Mark Custom / Past Attendance</div>
+      <form id="customAttForm" onsubmit="submitCustomAttendance(event)">
+        <div class="form-grid">
+          <div>
+            <label>Subject</label>
+            <select id="caSubject" required></select>
+          </div>
+          <div>
+            <label>Date</label>
+            <input type="date" id="caDate" required />
+          </div>
+          <div>
+            <label>Time Slot / Label</label>
+            <input type="text" id="caSlot" placeholder="e.g. 08:30-10:30 or Week 2" value="Custom" required />
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="caStatus" required>
+              <option value="Present">Present</option>
+              <option value="Absent">Absent</option>
+            </select>
+          </div>
+          <div>
+            <label>Note (Optional)</label>
+            <input type="text" id="caNote" placeholder="e.g. Marked later" />
+          </div>
+        </div>
+        <div style="margin-top: 14px;">
+          <button type="submit" class="btn btn-primary" id="caSubmitBtn">Save Attendance</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <span>🗂️ Attendance History</span>
+        <select id="historyFilter" onchange="renderHistory()" style="width:auto; padding:6px 10px; font-size:0.82rem;">
+          <option value="ALL">All Subjects</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Subject</th>
+              <th>Slot</th>
+              <th>Status</th>
+              <th>Type</th>
+              <th>Note</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-backdrop" id="previewModal" onclick="if(event.target===this) closePreview()">
+  <div class="modal">
+    <div class="modal-header">
+      <strong id="previewTitle" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Preview</strong>
+      <div style="display:flex; gap:8px;">
+        <a id="previewDownloadBtn" class="btn btn-primary btn-sm" target="_blank" rel="noopener">⬇️ Download</a>
+        <a id="previewNewTabBtn" class="btn btn-ghost btn-sm" target="_blank" rel="noopener">↗️ Open Tab</a>
+        <button class="btn btn-ghost btn-sm" onclick="closePreview()">✕</button>
+      </div>
+    </div>
+    <iframe id="previewFrame" allow="autoplay"></iframe>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ==============================================================
+  // 1. PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW
+  // ==============================================================
+  const API_URL = "https://script.google.com/macros/s/AKfycbydQKB7CJD7CouvokD4NvbSOT_ZMEvsyVDhDGYzOpBDH-p10L0y0WUGJ1TLYAYqolcLZw/exec";
+  const APP_PIN = ""; // Apps Script eke APP_PIN dammoth meketh eka danna
+
+  let state = { subjects: [], timetable: [], coverups: [], attendance: [] };
+  let activeSubject = null;
+  let folderStack = []; // Breadcrumbs for subfolders
+  let currentDriveFiles = [];
+
+  // --- Utilities ---
+  function getLocalDateStr(d = new Date()) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function getWeekdayName(d = new Date()) {
+    return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()];
+  }
+
+  function timeToMins(str) {
+    if (!str) return 0;
+    const clean = String(str).trim().toUpperCase();
+    const match = clean.match(/(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/);
+    if (!match) return 0;
+    let h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    const ap = match[3];
+    if (ap === 'PM' && h < 12) h += 12;
+    if (ap === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
+  }
+
+  function nowMins() {
+    const d = new Date();
+    return d.getHours() * 60 + d.getMinutes();
+  }
+
+  function subjectName(code) {
+    const s = state.subjects.find(x => x.SubjectCode === code);
+    return s ? s.SubjectName : code;
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.style.display = 'none', 3200);
+  }
+
+  function escapeHtml(str) {
+    return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function formatBytes(bytes) {
+    const b = Number(bytes || 0);
+    if (!b) return 'Google Doc';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(b) / Math.log(1024));
+    return (b / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+  }
+
+  function fileIcon(mime) {
+    if (!mime) return '📄';
+    if (mime.includes('pdf')) return '📕';
+    if (mime.includes('presentation') || mime.includes('powerpoint')) return '📊';
+    if (mime.includes('spreadsheet') || mime.includes('excel')) return '📗';
+    if (mime.includes('word') || mime.includes('document')) return '📘';
+    if (mime.includes('video')) return '🎬';
+    if (mime.includes('image')) return '🖼️';
+    if (mime.includes('zip') || mime.includes('rar')) return '🗜️';
+    return '📄';
+  }
+
+  // --- API Calls (CORS-safe for GitHub Pages + GAS) ---
+  async function apiGet(params) {
+    if (API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) {
+      throw new Error('Please paste your Apps Script Web App URL in API_URL first!');
+    }
+    const qs = new URLSearchParams({ ...params, pin: APP_PIN }).toString();
+    const res = await fetch(`${API_URL}?${qs}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Request failed');
+    return json.data;
+  }
+
+  async function apiPost(payload) {
+    if (API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) {
+      throw new Error('Please paste your Apps Script Web App URL in API_URL first!');
+    }
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
+      body: JSON.stringify({ ...payload, pin: APP_PIN })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Update failed');
+    return json.data;
+  }
+
+  // --- Tab Navigation ---
+  function switchTab(id, btn) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+
+  function openSubjectMaterials(code) {
+    const lmsBtn = document.querySelectorAll('.tab-btn')[1];
+    switchTab('lms', lmsBtn);
+    selectSubject(code);
+  }
+
+  // --- Load & Render Dashboard ---
+  async function loadDashboard() {
+    try {
+      state = await apiGet({ action: 'getDashboard' });
+      populateSubjectDropdowns();
+      renderHome();
+      renderSubjectPills();
+      renderCoverupList();
+      renderHistory();
+    } catch (err) {
+      document.getElementById('liveBanner').innerHTML = `<div style="color:#fca5a5;">⚠️ ${escapeHtml(err.message)}</div>`;
+      showToast(err.message);
+    }
+  }
+
+  function getTodayLectures() {
+    const todayStr = getLocalDateStr();
+    const weekday = getWeekdayName().toLowerCase();
+
+    const regular = state.timetable
+      .filter(t => t.Day.toLowerCase() === weekday)
+      .map(t => ({
+        subjectCode: t.SubjectCode,
+        startTime: t.StartTime,
+        endTime: t.EndTime,
+        location: t.Location || '',
+        type: 'Regular',
+        sessionKey: `${todayStr}_${t.SubjectCode}_${t.StartTime}`
+      }));
+
+    const coverups = state.coverups
+      .filter(c => c.Date === todayStr)
+      .map(c => ({
+        subjectCode: c.SubjectCode,
+        startTime: c.StartTime,
+        endTime: c.EndTime,
+        location: c.Note || 'Cover-Up Session',
+        type: 'Coverup',
+        sessionKey: `${todayStr}_${c.SubjectCode}_${c.StartTime}_CU`
+      }));
+
+    return [...regular, ...coverups].sort((a, b) => timeToMins(a.startTime) - timeToMins(b.startTime));
+  }
+
+  function findAttendance(sessionKey) {
+    return state.attendance.find(a => a.SessionKey === sessionKey);
+  }
+
+  function renderHome() {
+    const todayStr = getLocalDateStr();
+    const weekday = getWeekdayName();
+    document.getElementById('todayLabel').textContent = `${weekday}, ${todayStr}`;
+
+    const lectures = getTodayLectures();
+    const mins = nowMins();
+
+    // 1. Live / Next Banner
+    const live = lectures.find(l => mins >= timeToMins(l.startTime) && mins < timeToMins(l.endTime));
+    const next = lectures.find(l => mins < timeToMins(l.startTime));
+    const banner = document.getElementById('liveBanner');
+
+    if (live) {
+      const rem = timeToMins(live.endTime) - mins;
+      const att = findAttendance(live.sessionKey);
+      banner.className = 'live-banner';
+      banner.innerHTML = `
+        <div>
+          <span class="badge badge-live">🔴 HAPPENING NOW</span>
+          ${live.type === 'Coverup' ? '<span class="badge badge-coverup" style="margin-left:6px;">COVER-UP</span>' : ''}
+          <h2 style="margin-top:8px;">${escapeHtml(live.subjectCode)} — ${escapeHtml(subjectName(live.subjectCode))}</h2>
+          <div class="lec-meta" style="color:#cbd5e1;">
+            ⏰ ${escapeHtml(live.startTime)} – ${escapeHtml(live.endTime)} (${rem} mins left)
+            ${live.location ? ' • 📍 ' + escapeHtml(live.location) : ''}
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-present ${att?.Status === 'Present' ? 'selected' : ''}"
+            onclick="markToday('${live.sessionKey}','${live.subjectCode}','${live.startTime}-${live.endTime}','Present','${live.type}')">
+            ✅ Present
+          </button>
+          <button class="btn btn-absent ${att?.Status === 'Absent' ? 'selected' : ''}"
+            onclick="markToday('${live.sessionKey}','${live.subjectCode}','${live.startTime}-${live.endTime}','Absent','${live.type}')">
+            ❌ Absent
+          </button>
+          <button class="btn btn-ghost" onclick="openSubjectMaterials('${live.subjectCode}')">📂 Materials</button>
+        </div>
+      `;
+    } else if (next) {
+      const diff = timeToMins(next.startTime) - mins;
+      const hrs = Math.floor(diff / 60), m = diff % 60;
+      const waitStr = hrs > 0 ? `${hrs}h ${m}m` : `${m} mins`;
+      banner.className = 'live-banner idle';
+      banner.innerHTML = `
+        <div>
+          <span class="badge badge-up">⏳ NEXT LECTURE TODAY</span>
+          <h3 style="margin-top:8px;">${escapeHtml(next.subjectCode)} — ${escapeHtml(subjectName(next.subjectCode))}</h3>
+          <div class="lec-meta">Starts at ${escapeHtml(next.startTime)} (in ${waitStr}) ${next.location ? '• 📍 ' + escapeHtml(next.location) : ''}</div>
+        </div>
+        <button class="btn btn-ghost" onclick="openSubjectMaterials('${next.subjectCode}')">📂 Open Materials</button>
+      `;
+    } else {
+      banner.className = 'live-banner idle';
+      banner.innerHTML = `
+        <div>
+          <span class="badge badge-done">🎉 ALL CLEAR</span>
+          <h3 style="margin-top:8px;">No ongoing or upcoming lectures left for today.</h3>
+          <div class="lec-meta">Use Cover-Up tab if an extra lecture gets announced.</div>
+        </div>
+      `;
+    }
+
+    // 2. Today's Lectures List
+    const listEl = document.getElementById('todayLecturesList');
+    if (lectures.length === 0) {
+      listEl.innerHTML = `<div class="empty">No lectures scheduled for ${weekday}.</div>`;
+    } else {
+      listEl.innerHTML = lectures.map(l => {
+        const sM = timeToMins(l.startTime);
+        const eM = timeToMins(l.endTime);
+        const isLive = mins >= sM && mins < eM;
+        const isEnded = mins >= eM;
+        const canMark = mins >= sM; // Unlocks once lecture time starts
+        const att = findAttendance(l.sessionKey);
+
+        let statusBadge = `<span class="badge badge-up">Upcoming</span>`;
+        if (isLive) statusBadge = `<span class="badge badge-live">🔴 Live Now</span>`;
+        else if (isEnded) statusBadge = `<span class="badge badge-done">Ended</span>`;
+
+        return `
+          <div class="lec-item ${isLive ? 'is-now' : ''}">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span class="lec-time">${escapeHtml(l.startTime)} - ${escapeHtml(l.endTime)}</span>
+                ${statusBadge}
+                ${l.type === 'Coverup' ? '<span class="badge badge-coverup">Cover-Up</span>' : ''}
+              </div>
+              <div style="font-weight:700; margin-top:4px;">${escapeHtml(l.subjectCode)} — ${escapeHtml(subjectName(l.subjectCode))}</div>
+              ${l.location ? `<div class="lec-meta">📍 ${escapeHtml(l.location)}</div>` : ''}
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              ${canMark ? `
+                <button class="btn btn-sm btn-present ${att?.Status === 'Present' ? 'selected' : ''}"
+                  onclick="markToday('${l.sessionKey}','${l.subjectCode}','${l.startTime}-${l.endTime}','Present','${l.type}')">
+                  ✅ Present
+                </button>
+                <button class="btn btn-sm btn-absent ${att?.Status === 'Absent' ? 'selected' : ''}"
+                  onclick="markToday('${l.sessionKey}','${l.subjectCode}','${l.startTime}-${l.endTime}','Absent','${l.type}')">
+                  ❌ Absent
+                </button>
+              ` : `<button class="btn btn-sm btn-ghost" disabled>🔒 Unlocks at ${escapeHtml(l.startTime)}</button>`}
+              <button class="btn btn-sm btn-ghost" onclick="openSubjectMaterials('${l.subjectCode}')">📂</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 3. Subject Attendance Percentages
+    const grid = document.getElementById('attendanceGrid');
+    if (state.subjects.length === 0) {
+      grid.innerHTML = `<div class="empty">Add subjects to the Google Sheet 'Subjects' tab.</div>`;
+    } else {
+      grid.innerHTML = state.subjects.map(sub => {
+        const recs = state.attendance.filter(a => a.SubjectCode === sub.SubjectCode);
+        const present = recs.filter(a => a.Status === 'Present').length;
+        const total = recs.length;
+        const pct = total > 0 ? Math.round((present / total) * 100) : null;
+        const color = pct === null ? '#64748b' : pct >= 80 ? 'var(--green)' : pct >= 75 ? 'var(--amber)' : 'var(--red)';
+
+        return `
+          <div class="att-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+              <div>
+                <div style="font-size:0.78rem; color:#818cf8; font-weight:700;">${escapeHtml(sub.SubjectCode)}</div>
+                <div style="font-weight:600; font-size:0.92rem; margin-top:2px;">${escapeHtml(sub.SubjectName)}</div>
+              </div>
+              <div class="att-pct" style="color:${color};">${pct === null ? '—' : pct + '%'}</div>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:${pct || 0}%; background:${color};"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.8rem; color:var(--muted);">
+              <span>${present} / ${total} attended</span>
+              <button class="btn btn-ghost btn-sm" onclick="openSubjectMaterials('${sub.SubjectCode}')">📂 Files</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  async function markToday(sessionKey, subjectCode, timeSlot, status, type) {
+    showToast(`Saving ${status}...`);
+    try {
+      state = await apiPost({
+        action: 'markAttendance',
+        sessionKey,
+        date: getLocalDateStr(),
+        subjectCode,
+        timeSlot,
+        status,
+        type,
+        note: ''
+      });
+      renderHome();
+      renderHistory();
+      showToast(`Marked ${status} for ${subjectCode} ✓`);
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    }
+  }
+
+  // --- LMS / Google Drive ---
+  function renderSubjectPills() {
+    const el = document.getElementById('subjectPills');
+    el.innerHTML = state.subjects.map(s => `
+      <button class="pill ${activeSubject?.SubjectCode === s.SubjectCode ? 'active' : ''}"
+        onclick="selectSubject('${s.SubjectCode}')">
+        ${escapeHtml(s.SubjectCode)} — ${escapeHtml(s.SubjectName)}
+      </button>
+    `).join('');
+  }
+
+  async function selectSubject(code) {
+    const sub = state.subjects.find(s => s.SubjectCode === code);
+    if (!sub) return;
+    activeSubject = sub;
+    renderSubjectPills();
+    document.getElementById('refreshDriveBtn').style.display = 'inline-flex';
+    folderStack = [{ name: sub.SubjectCode, ref: sub.DriveLink }];
+    await loadDriveFolder(sub.DriveLink);
+  }
+
+  async function openSubfolder(folderId, folderName) {
+    folderStack.push({ name: folderName, ref: folderId });
+    await loadDriveFolder(folderId);
+  }
+
+  async function navigateCrumb(index) {
+    folderStack = folderStack.slice(0, index + 1);
+    await loadDriveFolder(folderStack[index].ref);
+  }
+
+  async function refreshCurrentDrive() {
+    if (!folderStack.length) return;
+    await loadDriveFolder(folderStack[folderStack.length - 1].ref);
+  }
+
+  async function loadDriveFolder(folderRef) {
+    const container = document.getElementById('lmsContent');
+    if (!folderRef || folderRef.includes('PASTE_DRIVE_FOLDER')) {
+      container.innerHTML = `<div class="empty">⚠️ No Drive folder link set for this subject in Google Sheets.</div>`;
+      return;
+    }
+    container.innerHTML = `<div class="empty">⏳ Fetching latest files from Google Drive...</div>`;
+    try {
+      const data = await apiGet({ action: 'getDriveFiles', folderUrl: folderRef });
+      currentDriveFiles = data;
+      renderDriveList('');
+    } catch (err) {
+      container.innerHTML = `<div class="empty" style="color:#fca5a5;">⚠️ ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function renderDriveList(query) {
+    const container = document.getElementById('lmsContent');
+    const q = query.trim().toLowerCase();
+    const folders = (currentDriveFiles.folders || []).filter(f => f.name.toLowerCase().includes(q));
+    const files = (currentDriveFiles.files || []).filter(f => f.name.toLowerCase().includes(q));
+
+    const crumbsHtml = folderStack.map((c, idx) => `
+      <span class="crumb" onclick="navigateCrumb(${idx})">${escapeHtml(c.name)}</span>
+      ${idx < folderStack.length - 1 ? '<span>/</span>' : ''}
+    `).join('');
+
+    let html = `
+      <div class="breadcrumbs">📁 ${crumbsHtml}</div>
+      <div style="margin-bottom:14px;">
+        <input type="text" placeholder="🔍 Search files or folders..." value="${escapeHtml(query)}"
+          oninput="renderDriveList(this.value)" />
+      </div>
+    `;
+
+    if (folders.length === 0 && files.length === 0) {
+      html += `<div class="empty">No files found in this folder.</div>`;
+    } else {
+      folders.forEach(f => {
+        html += `
+          <div class="file-row" style="cursor:pointer;" onclick="openSubfolder('${f.id}', '${escapeHtml(f.name).replace(/'/g, "\\'")}')">
+            <div>
+              <div class="file-name">📁 ${escapeHtml(f.name)}</div>
+              <div class="lec-meta">Folder • Updated ${new Date(f.updated).toLocaleDateString()}</div>
+            </div>
+            <button class="btn btn-ghost btn-sm">Open →</button>
+          </div>
+        `;
+      });
+
+      files.forEach(f => {
+        html += `
+          <div class="file-row">
+            <div style="flex:1; min-width:200px;">
+              <div class="file-name">${fileIcon(f.mimeType)} ${escapeHtml(f.name)}</div>
+              <div class="lec-meta">${formatBytes(f.size)} • Updated ${new Date(f.updated).toLocaleString()}</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-ghost btn-sm"
+                onclick="openPreview('${escapeHtml(f.name).replace(/'/g, "\\'")}', '${f.previewUrl}', '${f.downloadUrl}')">
+                👁️ Preview
+              </button>
+              <a class="btn btn-primary btn-sm" href="${f.downloadUrl}" target="_blank" rel="noopener">
+                ⬇️ Download
+              </a>
+            </div>
+          </div>
+        `;
+      });
+    }
+    container.innerHTML = html;
+  }
+
+  function openPreview(name, previewUrl, downloadUrl) {
+    document.getElementById('previewTitle').textContent = name;
+    document.getElementById('previewFrame').src = previewUrl;
+    document.getElementById('previewDownloadBtn').href = downloadUrl;
+    document.getElementById('previewNewTabBtn').href = previewUrl;
+    document.getElementById('previewModal').classList.add('open');
+  }
+
+  function closePreview() {
+    document.getElementById('previewModal').classList.remove('open');
+    document.getElementById('previewFrame').src = '';
+  }
+
+  // --- Cover-Up Lectures ---
+  function populateSubjectDropdowns() {
+    const opts = state.subjects.map(s =>
+      `<option value="${escapeHtml(s.SubjectCode)}">${escapeHtml(s.SubjectCode)} — ${escapeHtml(s.SubjectName)}</option>`
+    ).join('');
+    document.getElementById('cuSubject').innerHTML = opts;
+    document.getElementById('caSubject').innerHTML = opts;
+    document.getElementById('historyFilter').innerHTML = `<option value="ALL">All Subjects</option>` + opts;
+  }
+
+  async function submitCoverup(e) {
+    e.preventDefault();
+    const btn = document.getElementById('cuSubmitBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    try {
+      state = await apiPost({
+        action: 'addCoverup',
+        subjectCode: document.getElementById('cuSubject').value,
+        date: document.getElementById('cuDate').value,
+        startTime: document.getElementById('cuStart').value,
+        endTime: document.getElementById('cuEnd').value,
+        note: document.getElementById('cuNote').value
+      });
+      e.target.reset();
+      document.getElementById('cuDate').value = getLocalDateStr();
+      renderHome();
+      renderCoverupList();
+      showToast('Cover-up lecture added ✓');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Add Cover-Up Lecture';
+    }
+  }
+
+  async function deleteCoverup(id) {
+    if (!confirm('Delete this cover-up lecture?')) return;
+    try {
+      state = await apiPost({ action: 'deleteCoverup', id });
+      renderHome();
+      renderCoverupList();
+      showToast('Deleted ✓');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    }
+  }
+
+  function renderCoverupList() {
+    const el = document.getElementById('coverupList');
+    const list = [...state.coverups].sort((a, b) => (b.Date + b.StartTime).localeCompare(a.Date + a.StartTime));
+    if (!list.length) {
+      el.innerHTML = `<div class="empty">No cover-up lectures scheduled.</div>`;
+      return;
+    }
+    el.innerHTML = list.map(c => `
+      <div class="lec-item">
+        <div>
+          <span class="badge badge-coverup">${escapeHtml(c.Date)}</span>
+          <span class="lec-time" style="margin-left:8px;">${escapeHtml(c.StartTime)} – ${escapeHtml(c.EndTime)}</span>
+          <div style="font-weight:700; margin-top:4px;">${escapeHtml(c.SubjectCode)} — ${escapeHtml(subjectName(c.SubjectCode))}</div>
+          ${c.Note ? `<div class="lec-meta">📝 ${escapeHtml(c.Note)}</div>` : ''}
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="deleteCoverup('${c.ID}')">🗑️ Delete</button>
+      </div>
+    `).join('');
+  }
+
+  // --- Custom / Past Attendance ---
+  async function submitCustomAttendance(e) {
+    e.preventDefault();
+    const btn = document.getElementById('caSubmitBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    const date = document.getElementById('caDate').value;
+    const sub = document.getElementById('caSubject').value;
+    const slot = document.getElementById('caSlot').value.trim();
+    const sessionKey = `${date}_${sub}_${slot}_${Date.now()}`;
+
+    try {
+      state = await apiPost({
+        action: 'markAttendance',
+        sessionKey,
+        date,
+        subjectCode: sub,
+        timeSlot: slot,
+        status: document.getElementById('caStatus').value,
+        type: 'Custom',
+        note: document.getElementById('caNote').value
+      });
+      renderHome();
+      renderHistory();
+      showToast('Custom attendance saved ✓');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Attendance';
+    }
+  }
+
+  async function deleteAttendance(sessionKey) {
+    if (!confirm('Remove this attendance record?')) return;
+    try {
+      state = await apiPost({ action: 'deleteAttendance', sessionKey });
+      renderHome();
+      renderHistory();
+      showToast('Record removed ✓');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    }
+  }
+
+  function renderHistory() {
+    const filter = document.getElementById('historyFilter').value;
+    const rows = [...state.attendance]
+      .filter(a => filter === 'ALL' || a.SubjectCode === filter)
+      .sort((a, b) => b.Date.localeCompare(a.Date));
+
+    const body = document.getElementById('historyBody');
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="7" class="empty">No attendance records yet.</td></tr>`;
+      return;
+    }
+    body.innerHTML = rows.map(a => `
+      <tr>
+        <td>${escapeHtml(a.Date)}</td>
+        <td><strong>${escapeHtml(a.SubjectCode)}</strong></td>
+        <td>${escapeHtml(a.TimeSlot)}</td>
+        <td><span class="badge ${a.Status === 'Present' ? 'badge-present' : 'badge-absent'}">${escapeHtml(a.Status)}</span></td>
+        <td>${escapeHtml(a.Type)}</td>
+        <td style="color:var(--muted);">${escapeHtml(a.Note)}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="deleteAttendance('${escapeHtml(a.SessionKey)}')">🗑️</button></td>
+      </tr>
+    `).join('');
+  }
+
+  // --- Clock & Auto-Refresh UI every minute ---
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('liveClock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('liveDate').textContent = now.toLocaleDateString([], { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  document.getElementById('cuDate').value = getLocalDateStr();
+  document.getElementById('caDate').value = getLocalDateStr();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(() => { if (state.subjects.length) renderHome(); }, 30000); // Live lecture status auto-updates!
+
+  loadDashboard();
+</script>
+</body>
+</html>
