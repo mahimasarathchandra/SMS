@@ -181,17 +181,17 @@
 
 <header>
   <div class="header-inner">
-    <div class="brand">🎓 Personal LMS & Attendance</div>
+    <div class="brand">NEXORA
     <div class="clock-box">
       <div class="clock-time" id="liveClock">--:--:--</div>
       <div id="liveDate">Loading...</div>
     </div>
   </div>
   <nav>
-    <button class="tab-btn active" onclick="switchTab('home', this)">🏠 Home</button>
-    <button class="tab-btn" onclick="switchTab('lms', this)">📂 LMS Materials</button>
-    <button class="tab-btn" onclick="switchTab('coverup', this)">➕ Cover-Up Lectures</button>
-    <button class="tab-btn" onclick="switchTab('custom', this)">📝 Custom Attendance</button>
+    <button class="tab-btn active" onclick="switchTab('home', this)">Home</button>
+    <button class="tab-btn" onclick="switchTab('lms', this)">LMS Materials</button>
+    <button class="tab-btn" onclick="switchTab('coverup', this)">Cover-Up Lectures</button>
+    <button class="tab-btn" onclick="switchTab('custom', this)">Custom Attendance</button>
   </nav>
 </header>
 
@@ -204,14 +204,14 @@
 
     <div class="card">
       <div class="section-title">
-        <span>📅 Today's Lectures (<span id="todayLabel"></span>)</span>
-        <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">🔄 Sync</button>
+        <span>Today's Lectures (<span id="todayLabel"></span>)</span>
+        <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">Sync</button>
       </div>
       <div id="todayLecturesList"><div class="empty">Loading...</div></div>
     </div>
 
     <div class="card">
-      <div class="section-title">📊 Subject-Wise Attendance</div>
+      <div class="section-title">Subject-Wise Attendance</div>
       <div id="attendanceGrid" class="grid-3"><div class="empty">Loading...</div></div>
     </div>
   </section>
@@ -220,7 +220,7 @@
   <section id="view-lms" class="view">
     <div class="card">
       <div class="section-title">
-        <span>📚 Select Subject</span>
+        <span>Select Subject</span>
         <button class="btn btn-ghost btn-sm" id="refreshDriveBtn" onclick="refreshCurrentDrive()" style="display:none;">🔄 Refresh Files</button>
       </div>
       <div id="subjectPills" class="subject-pills"></div>
@@ -233,7 +233,7 @@
   <!-- COVER-UP VIEW -->
   <section id="view-coverup" class="view">
     <div class="card">
-      <div class="section-title">➕ Add Cover-Up Lecture</div>
+      <div class="section-title">Add Cover-Up Lecture</div>
       <form id="coverupForm" onsubmit="submitCoverup(event)">
         <div class="form-grid">
           <div>
@@ -264,7 +264,7 @@
     </div>
 
     <div class="card">
-      <div class="section-title">📌 Scheduled Cover-Up Lectures</div>
+      <div class="section-title">Scheduled Cover-Up Lectures</div>
       <div id="coverupList"><div class="empty">No cover-up lectures added yet.</div></div>
     </div>
   </section>
@@ -272,7 +272,7 @@
   <!-- CUSTOM / PAST ATTENDANCE VIEW -->
   <section id="view-custom" class="view">
     <div class="card">
-      <div class="section-title">📝 Mark Custom / Past Attendance</div>
+      <div class="section-title">Mark Custom / Past Attendance</div>
       <form id="customAttForm" onsubmit="submitCustomAttendance(event)">
         <div class="form-grid">
           <div>
@@ -307,7 +307,7 @@
 
     <div class="card">
       <div class="section-title">
-        <span>🗂️ Attendance History</span>
+        <span>Attendance History</span>
         <select id="historyFilter" onchange="renderHistory()" style="width:auto; padding:6px 10px; font-size:0.82rem;">
           <option value="ALL">All Subjects</option>
         </select>
@@ -338,8 +338,8 @@
     <div class="modal-header">
       <strong id="previewTitle" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Preview</strong>
       <div style="display:flex; gap:8px;">
-        <a id="previewDownloadBtn" class="btn btn-primary btn-sm" target="_blank" rel="noopener">⬇️ Download</a>
-        <a id="previewNewTabBtn" class="btn btn-ghost btn-sm" target="_blank" rel="noopener">↗️ Open Tab</a>
+        <a id="previewDownloadBtn" class="btn btn-primary btn-sm" target="_blank" rel="noopener">Download</a>
+        <a id="previewNewTabBtn" class="btn btn-ghost btn-sm" target="_blank" rel="noopener">Open Tab</a>
         <button class="btn btn-ghost btn-sm" onclick="closePreview()">✕</button>
       </div>
     </div>
