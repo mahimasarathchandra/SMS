@@ -431,7 +431,7 @@
   // --- API Calls (CORS-safe for GitHub Pages + GAS) ---
   async function apiGet(params) {
     if (API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) {
-      throw new Error('Please paste your Apps Script Web App URL in API_URL first!');
+      throw new Error('Apps Script URL Not Found !');
     }
     const qs = new URLSearchParams({ ...params, pin: APP_PIN }).toString();
     const res = await fetch(`${API_URL}?${qs}`);
@@ -442,7 +442,7 @@
 
   async function apiPost(payload) {
     if (API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) {
-      throw new Error('Please paste your Apps Script Web App URL in API_URL first!');
+      throw new Error('Apps Script URL Not Found !');
     }
     const res = await fetch(API_URL, {
       method: 'POST',
@@ -546,11 +546,11 @@
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn btn-present ${att?.Status === 'Present' ? 'selected' : ''}"
             onclick="markToday('${live.sessionKey}','${live.subjectCode}','${live.startTime}-${live.endTime}','Present','${live.type}')">
-            ✅ Present
+            Present
           </button>
           <button class="btn btn-absent ${att?.Status === 'Absent' ? 'selected' : ''}"
             onclick="markToday('${live.sessionKey}','${live.subjectCode}','${live.startTime}-${live.endTime}','Absent','${live.type}')">
-            ❌ Absent
+            Absent
           </button>
           <button class="btn btn-ghost" onclick="openSubjectMaterials('${live.subjectCode}')">📂 Materials</button>
         </div>
@@ -566,13 +566,13 @@
           <h3 style="margin-top:8px;">${escapeHtml(next.subjectCode)} — ${escapeHtml(subjectName(next.subjectCode))}</h3>
           <div class="lec-meta">Starts at ${escapeHtml(next.startTime)} (in ${waitStr}) ${next.location ? '• 📍 ' + escapeHtml(next.location) : ''}</div>
         </div>
-        <button class="btn btn-ghost" onclick="openSubjectMaterials('${next.subjectCode}')">📂 Open Materials</button>
+        <button class="btn btn-ghost" onclick="openSubjectMaterials('${next.subjectCode}')">Open Materials</button>
       `;
     } else {
       banner.className = 'live-banner idle';
       banner.innerHTML = `
         <div>
-          <span class="badge badge-done">🎉 ALL CLEAR</span>
+          <span class="badge badge-done">ALL CLEAR</span>
           <h3 style="margin-top:8px;">No ongoing or upcoming lectures left for today.</h3>
           <div class="lec-meta">Use Cover-Up tab if an extra lecture gets announced.</div>
         </div>
@@ -611,11 +611,11 @@
               ${canMark ? `
                 <button class="btn btn-sm btn-present ${att?.Status === 'Present' ? 'selected' : ''}"
                   onclick="markToday('${l.sessionKey}','${l.subjectCode}','${l.startTime}-${l.endTime}','Present','${l.type}')">
-                  ✅ Present
+                  Present
                 </button>
                 <button class="btn btn-sm btn-absent ${att?.Status === 'Absent' ? 'selected' : ''}"
                   onclick="markToday('${l.sessionKey}','${l.subjectCode}','${l.startTime}-${l.endTime}','Absent','${l.type}')">
-                  ❌ Absent
+                  Absent
                 </button>
               ` : `<button class="btn btn-sm btn-ghost" disabled>🔒 Unlocks at ${escapeHtml(l.startTime)}</button>`}
               <button class="btn btn-sm btn-ghost" onclick="openSubjectMaterials('${l.subjectCode}')">📂</button>
@@ -651,7 +651,7 @@
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.8rem; color:var(--muted);">
               <span>${present} / ${total} attended</span>
-              <button class="btn btn-ghost btn-sm" onclick="openSubjectMaterials('${sub.SubjectCode}')">📂 Files</button>
+              <button class="btn btn-ghost btn-sm" onclick="openSubjectMaterials('${sub.SubjectCode}')">Files</button>
             </div>
           </div>
         `;
@@ -719,10 +719,10 @@
   async function loadDriveFolder(folderRef) {
     const container = document.getElementById('lmsContent');
     if (!folderRef || folderRef.includes('PASTE_DRIVE_FOLDER')) {
-      container.innerHTML = `<div class="empty">⚠️ No Drive folder link set for this subject in Google Sheets.</div>`;
+      container.innerHTML = `<div class="empty">No Drive folder link set for this subject !</div>`;
       return;
     }
-    container.innerHTML = `<div class="empty">⏳ Fetching latest files from Google Drive...</div>`;
+    container.innerHTML = `<div class="empty">Fetching latest files from Google Drive...</div>`;
     try {
       const data = await apiGet({ action: 'getDriveFiles', folderUrl: folderRef });
       currentDriveFiles = data;
@@ -776,10 +776,10 @@
             <div style="display:flex; gap:8px;">
               <button class="btn btn-ghost btn-sm"
                 onclick="openPreview('${escapeHtml(f.name).replace(/'/g, "\\'")}', '${f.previewUrl}', '${f.downloadUrl}')">
-                👁️ Preview
+                Preview
               </button>
               <a class="btn btn-primary btn-sm" href="${f.downloadUrl}" target="_blank" rel="noopener">
-                ⬇️ Download
+                Download
               </a>
             </div>
           </div>
