@@ -3,225 +3,477 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Personal LMS & Attendance</title>
+  <title>NEXORA — Personal LMS & Attendance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --surface-2: #273549;
-      --border: #334155;
-      --text: #f1f5f9;
-      --muted: #94a3b8;
+      --bg: #080c14;
+      --bg-glow: radial-gradient(circle at 15% 0%, rgba(99, 102, 241, 0.14), transparent 45%),
+                 radial-gradient(circle at 85% 10%, rgba(16, 185, 129, 0.08), transparent 40%);
+      --surface: #111827;
+      --surface-2: #182235;
+      --surface-3: #1f2b42;
+      --border: rgba(148, 163, 184, 0.14);
+      --border-strong: rgba(148, 163, 184, 0.28);
+      --text: #f8fafc;
+      --text-2: #cbd5e1;
+      --muted: #64748b;
       --primary: #6366f1;
       --primary-hover: #4f46e5;
-      --green: #22c55e;
+      --primary-soft: rgba(99, 102, 241, 0.16);
+      --green: #10b981;
+      --green-soft: rgba(16, 185, 129, 0.16);
       --red: #ef4444;
+      --red-soft: rgba(239, 68, 68, 0.16);
       --amber: #f59e0b;
-      --radius: 12px;
+      --amber-soft: rgba(245, 158, 11, 0.16);
+      --radius: 14px;
+      --radius-sm: 9px;
+      --shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
 
-    /* Header & Nav */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      background-image: var(--bg-glow);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 64px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.22); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.38); }
+
+    /* Header */
     header {
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(10px);
+      background: rgba(8, 12, 20, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 20;
+      position: sticky; top: 0; z-index: 30;
     }
     .header-inner {
-      max-width: 1100px; margin: 0 auto; padding: 14px 18px;
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+      max-width: 1220px; margin: 0 auto; padding: 14px 20px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;
     }
-    .brand { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .clock-box { font-size: 0.9rem; color: var(--muted); text-align: right; }
-    .clock-time { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.15rem; font-weight: 800; letter-spacing: 0.08em;
+    }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: grid; place-items: center; color: #fff;
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.35);
+    }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+    .clock-box { text-align: right; line-height: 1.25; }
+    .clock-time { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--text); }
+    .clock-date { font-size: 0.78rem; color: var(--muted); }
 
+    /* Navigation Tabs */
     nav {
-      max-width: 1100px; margin: 0 auto; padding: 0 18px;
-      display: flex; gap: 6px; overflow-x: auto;
+      max-width: 1220px; margin: 0 auto; padding: 0 20px;
+      display: flex; gap: 4px; overflow-x: auto;
     }
     .tab-btn {
-      background: none; border: none; color: var(--muted); padding: 12px 16px;
-      cursor: pointer; font-weight: 600; font-size: 0.92rem; white-space: nowrap;
-      border-bottom: 2px solid transparent; transition: 0.2s;
+      background: none; border: none; color: var(--muted);
+      padding: 12px 16px; cursor: pointer; font-weight: 600; font-size: 0.88rem;
+      white-space: nowrap; display: inline-flex; align-items: center; gap: 8px;
+      border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s;
     }
-    .tab-btn:hover { color: var(--text); }
-    .tab-btn.active { color: #818cf8; border-bottom-color: var(--primary); }
+    .tab-btn:hover { color: var(--text-2); }
+    .tab-btn.active { color: #a5b4fc; border-bottom-color: var(--primary); }
 
-    main { max-width: 1100px; margin: 22px auto; padding: 0 18px; }
-    .view { display: none; }
+    /* Main Container */
+    main { max-width: 1220px; margin: 24px auto; padding: 0 20px; }
+    .view { display: none; animation: fadeIn 0.2s ease; }
     .view.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Cards & Layout */
+    /* Cards */
     .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 18px; margin-bottom: 18px;
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
     }
-    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .section-title {
+      font-size: 0.98rem; font-weight: 700; margin-bottom: 16px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .title-left { display: inline-flex; align-items: center; gap: 8px; color: var(--text); }
+    .title-left svg { color: #818cf8; }
+
+    /* Semester Config Strip */
+    .sem-bar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; font-size: 0.82rem;
+    }
+    .sem-inputs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .sem-inputs input[type="date"] {
+      width: auto; padding: 5px 9px; font-size: 0.8rem; border-radius: 7px;
+    }
 
     /* Live Banner */
     .live-banner {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(16, 185, 129, 0.14));
-      border: 1px solid rgba(99, 102, 241, 0.5);
-      border-radius: var(--radius); padding: 20px; margin-bottom: 20px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(16, 185, 129, 0.12));
+      border: 1px solid rgba(99, 102, 241, 0.45);
+      border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px;
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+      box-shadow: 0 12px 32px -12px rgba(99, 102, 241, 0.25);
     }
     .live-banner.idle {
-      background: var(--surface); border-color: var(--border);
+      background: rgba(17, 24, 39, 0.85);
+      border-color: var(--border);
+      box-shadow: var(--shadow);
     }
+
+    /* Grids */
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+    .cal-workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 920px) {
+      .cal-workspace { grid-template-columns: 1fr; }
+    }
+
+    /* Badges */
     .badge {
       display: inline-flex; align-items: center; gap: 5px;
-      font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px;
-      text-transform: uppercase; letter-spacing: 0.4px;
+      font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.04em;
     }
-    .badge-live { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
-    .badge-up { background: rgba(99, 102, 241, 0.2); color: #c7d2fe; }
-    .badge-done { background: rgba(148, 163, 184, 0.15); color: var(--muted); }
-    .badge-coverup { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
-    .badge-present { background: rgba(34, 197, 94, 0.2); color: #86efac; }
-    .badge-absent { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .badge-live { background: var(--red-soft); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: pulse 1.4s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+    .badge-up { background: var(--primary-soft); color: #c7d2fe; }
+    .badge-done { background: rgba(148, 163, 184, 0.14); color: var(--muted); }
+    .badge-coverup { background: var(--amber-soft); color: #fcd34d; }
+    .badge-cancelled { background: var(--red-soft); color: #fca5a5; text-decoration: line-through; }
+    .badge-present { background: var(--green-soft); color: #6ee7b7; }
+    .badge-absent { background: var(--red-soft); color: #fca5a5; }
 
-    /* Lecture Row */
+    /* Buttons & Icon-only Buttons */
+    .btn {
+      border: none; border-radius: var(--radius-sm); padding: 9px 14px; font-size: 0.84rem;
+      font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      transition: all 0.16s ease; text-decoration: none; position: relative; font-family: inherit;
+    }
+    .btn:disabled { opacity: 0.38; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-ghost { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+    .btn-ghost:hover:not(:disabled) { background: var(--surface-3); color: var(--text); border-color: var(--border-strong); }
+    .btn-present { background: var(--green-soft); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35); }
+    .btn-present.selected, .btn-present:hover:not(:disabled) { background: var(--green); color: #052e16; border-color: var(--green); }
+    .btn-absent { background: var(--red-soft); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .btn-absent.selected, .btn-absent:hover:not(:disabled) { background: var(--red); color: #fff; border-color: var(--red); }
+    .btn-warn { background: var(--amber-soft); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .btn-warn:hover:not(:disabled) { background: var(--amber); color: #1c1917; }
+    .btn-danger-ghost { background: var(--surface-2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+    .btn-danger-ghost:hover:not(:disabled) { background: var(--red); color: #fff; border-color: var(--red); }
+
+    .btn-icon {
+      width: 34px; height: 34px; padding: 0; border-radius: 9px; flex-shrink: 0;
+    }
+    .btn-icon-sm {
+      width: 30px; height: 30px; padding: 0; border-radius: 8px; flex-shrink: 0;
+    }
+
+    /* Clean Tooltip on Icon Buttons */
+    [data-tip] { position: relative; }
+    [data-tip]::after {
+      content: attr(data-tip);
+      position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%) translateY(4px);
+      background: #020617; color: #f8fafc; border: 1px solid var(--border-strong);
+      font-size: 0.72rem; font-weight: 600; padding: 4px 8px; border-radius: 6px;
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: 0.14s ease;
+      z-index: 60; box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+    }
+    [data-tip]:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Lecture Items */
     .lec-item {
       background: var(--surface-2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+      border-radius: 11px; padding: 14px 16px; margin-bottom: 10px;
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+      transition: border-color 0.16s, background 0.16s;
     }
-    .lec-item.is-now { border-color: var(--primary); box-shadow: 0 0 0 1px rgba(99,102,241,0.4); }
-    .lec-time { font-weight: 700; font-size: 0.95rem; color: #a5b4fc; }
-    .lec-meta { font-size: 0.85rem; color: var(--muted); margin-top: 3px; }
+    .lec-item.is-now { border-color: rgba(99, 102, 241, 0.7); background: rgba(99, 102, 241, 0.08); }
+    .lec-item.is-cancelled { opacity: 0.62; border-style: dashed; border-color: rgba(239, 68, 68, 0.35); }
+    .lec-item.is-selected { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3); }
+    .lec-time { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.85rem; color: #a5b4fc; }
+    .lec-meta { font-size: 0.82rem; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .meta-chip { display: inline-flex; align-items: center; gap: 4px; }
+    .btn-group { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
-    /* Buttons */
-    .btn {
-      border: none; border-radius: 8px; padding: 8px 14px; font-size: 0.85rem;
-      font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
-      transition: 0.15s; text-decoration: none;
-    }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-    .btn-ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
-    .btn-ghost:hover:not(:disabled) { background: #334155; }
-    .btn-present { background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); }
-    .btn-present.selected, .btn-present:hover:not(:disabled) { background: var(--green); color: #052e16; }
-    .btn-absent { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
-    .btn-absent.selected, .btn-absent:hover:not(:disabled) { background: var(--red); color: #fff; }
-    .btn-sm { padding: 6px 10px; font-size: 0.8rem; }
-
-    /* Progress Bar */
+    /* Attendance Cards */
     .att-card {
       background: var(--surface-2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px;
+      border-radius: 12px; padding: 16px; transition: border-color 0.18s;
     }
-    .att-pct { font-size: 1.6rem; font-weight: 800; }
-    .progress-track { height: 7px; background: #0f172a; border-radius: 99px; overflow: hidden; margin-top: 10px; }
-    .progress-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+    .att-card:hover { border-color: var(--border-strong); }
+    .att-pct { font-family: 'JetBrains Mono', monospace; font-size: 1.45rem; font-weight: 800; }
+    .progress-track { height: 6px; background: rgba(2, 6, 23, 0.8); border-radius: 99px; overflow: hidden; margin-top: 12px; }
+    .progress-fill { height: 100%; border-radius: 99px; transition: width 0.35s ease; }
+
+    /* Graphical Calendar */
+    .cal-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px;
+    }
+    .cal-month-title { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+    .cal-weekdays {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 6px;
+    }
+    .cal-weekdays div {
+      text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 0;
+    }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px;
+    }
+    .cal-cell {
+      min-height: 82px; background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 6px; cursor: pointer;
+      display: flex; flex-direction: column; gap: 4px;
+      transition: border-color 0.15s, background 0.15s, transform 0.12s;
+      overflow: hidden;
+    }
+    .cal-cell:hover { border-color: var(--border-strong); background: var(--surface-3); }
+    .cal-cell.other-month { opacity: 0.32; }
+    .cal-cell.outside-sem { opacity: 0.48; background: rgba(15, 23, 42, 0.5); }
+    .cal-cell.is-today { border-color: rgba(99, 102, 241, 0.75); }
+    .cal-cell.is-selected {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.14);
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5);
+    }
+    .cal-day-num {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.78rem; font-weight: 700; color: var(--text-2);
+    }
+    .cal-cell.is-today .cal-day-num span:first-child {
+      background: var(--primary); color: #fff; width: 22px; height: 22px;
+      border-radius: 50%; display: grid; place-items: center; font-size: 0.72rem;
+    }
+    .cal-chips { display: flex; flex-direction: column; gap: 3px; }
+    .cal-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 5px;
+      display: flex; align-items: center; justify-content: space-between; gap: 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      border: 1px solid transparent;
+    }
+    .cal-chip.is-coverup { border-style: dashed; }
+    .cal-chip.is-cancelled {
+      background: rgba(239, 68, 68, 0.12) !important;
+      color: #fca5a5 !important;
+      border-color: rgba(239, 68, 68, 0.25) !important;
+      text-decoration: line-through;
+      opacity: 0.75;
+    }
+    .att-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .att-dot.present { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .att-dot.absent { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+    .cal-legend {
+      display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid var(--border); font-size: 0.76rem; color: var(--muted);
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+    @media (max-width: 600px) {
+      .cal-cell { min-height: 64px; padding: 4px; }
+      .cal-chip { font-size: 0.58rem; padding: 2px 3px; }
+    }
+
+    /* Day Inspector Panel */
+    .panel-box {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .conflict-box {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 10px; padding: 12px; margin-top: 12px;
+      font-size: 0.82rem; color: #fecaca;
+    }
 
     /* Forms */
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-    label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+    label { display: block; font-size: 0.76rem; color: var(--text-2); margin-bottom: 5px; font-weight: 600; }
     input, select {
-      width: 100%; background: #0f172a; border: 1px solid var(--border);
-      color: var(--text); border-radius: 8px; padding: 9px 11px; font-size: 0.9rem;
+      width: 100%; background: #090e19; border: 1px solid var(--border);
+      color: var(--text); border-radius: var(--radius-sm); padding: 9px 11px; font-size: 0.86rem;
+      font-family: inherit; transition: border-color 0.15s;
     }
     input:focus, select:focus { outline: none; border-color: var(--primary); }
 
     /* LMS */
     .subject-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
     .pill {
-      background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
-      padding: 9px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.88rem;
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2);
+      padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.84rem;
+      transition: all 0.16s;
     }
+    .pill:hover { border-color: var(--border-strong); color: var(--text); }
     .pill.active { background: var(--primary); border-color: var(--primary); color: #fff; }
     .file-row {
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
       padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border);
-      border-radius: 9px; margin-bottom: 8px;
+      border-radius: 10px; margin-bottom: 8px; transition: border-color 0.15s, background 0.15s;
     }
-    .file-name { font-weight: 600; word-break: break-word; }
-    .breadcrumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
-    .crumb { color: #818cf8; cursor: pointer; font-weight: 600; }
+    .file-row:hover { border-color: var(--border-strong); background: var(--surface-3); }
+    .file-info { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 210px; }
+    .file-icon-box {
+      width: 38px; height: 38px; border-radius: 9px; background: rgba(99,102,241,0.12);
+      color: #a5b4fc; display: grid; place-items: center; flex-shrink: 0;
+    }
+    .file-name { font-weight: 600; font-size: 0.9rem; word-break: break-word; }
+    .breadcrumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.84rem; color: var(--muted); margin-bottom: 12px; }
+    .crumb { color: #a5b4fc; cursor: pointer; font-weight: 600; }
     .crumb:hover { text-decoration: underline; }
+    .search-wrap { position: relative; margin-bottom: 14px; }
+    .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .search-wrap input { padding-left: 36px; }
 
     /* Table */
     .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
 
-    /* Modal for File Preview */
+    /* Preview Modal */
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50;
-      display: none; align-items: center; justify-content: center; padding: 16px;
+      position: fixed; inset: 0; background: rgba(2, 6, 23, 0.82); backdrop-filter: blur(6px);
+      z-index: 50; display: none; align-items: center; justify-content: center; padding: 16px;
     }
     .modal-backdrop.open { display: flex; }
     .modal {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-      width: 100%; max-width: 960px; height: 88vh; display: flex; flex-direction: column; overflow: hidden;
+      background: var(--surface); border: 1px solid var(--border-strong); border-radius: 16px;
+      width: 100%; max-width: 980px; height: 88vh; display: flex; flex-direction: column; overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
     }
     .modal-header {
       padding: 12px 16px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
-    .modal iframe { flex: 1; width: 100%; border: none; background: #111; }
+    .modal iframe { flex: 1; width: 100%; border: none; background: #0b0f19; }
 
-    /* Toast & Loader */
+    /* Toast & Empty */
     .toast {
-      position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #fff;
-      border: 1px solid var(--primary); padding: 12px 18px; border-radius: 10px;
-      font-size: 0.9rem; z-index: 100; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      position: fixed; bottom: 22px; right: 22px; background: var(--surface-2); color: var(--text);
+      border: 1px solid rgba(99, 102, 241, 0.5); padding: 11px 16px; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 500; z-index: 100; display: none;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.55);
     }
-    .empty { color: var(--muted); font-size: 0.9rem; padding: 14px 0; text-align: center; }
+    .empty { color: var(--muted); font-size: 0.86rem; padding: 20px 10px; text-align: center; }
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
   </style>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <div class="brand">NEXORA
-    <div class="clock-box">
-      <div class="clock-time" id="liveClock">--:--:--</div>
-      <div id="liveDate">Loading...</div>
+    <div class="brand">
+      <div class="brand-mark" id="brandIcon"></div>
+      <span>NEXORA</span>
+    </div>
+    <div class="header-right">
+      <div class="clock-box">
+        <div class="clock-time" id="liveClock">--:--:--</div>
+        <div class="clock-date" id="liveDate">Loading...</div>
+      </div>
+      <button class="btn btn-ghost btn-icon" id="topSyncBtn" onclick="loadDashboard()" data-tip="Sync Sheet Data"></button>
     </div>
   </div>
   <nav>
-    <button class="tab-btn active" onclick="switchTab('home', this)">Home</button>
-    <button class="tab-btn" onclick="switchTab('lms', this)">LMS Materials</button>
-    <button class="tab-btn" onclick="switchTab('coverup', this)">Cover-Up Lectures</button>
-    <button class="tab-btn" onclick="switchTab('custom', this)">Custom Attendance</button>
+    <button class="tab-btn active" data-tab="home" onclick="switchTab('home', this)">
+      <span class="nav-ico" data-icon="home"></span> Home
+    </button>
+    <button class="tab-btn" data-tab="lms" onclick="switchTab('lms', this)">
+      <span class="nav-ico" data-icon="folder"></span> LMS Materials
+    </button>
+    <button class="tab-btn" data-tab="coverup" onclick="switchTab('coverup', this)">
+      <span class="nav-ico" data-icon="calendarPlus"></span> Cover-Up &amp; Cancel
+    </button>
+    <button class="tab-btn" data-tab="custom" onclick="switchTab('custom', this)">
+      <span class="nav-ico" data-icon="checkSquare"></span> Custom Attendance
+    </button>
   </nav>
 </header>
 
 <main>
-  <!-- HOME VIEW -->
+  <!-- ==================== HOME VIEW ==================== -->
   <section id="view-home" class="view active">
     <div id="liveBanner" class="live-banner idle">
-      <div>Loading today's schedule...</div>
+      <div style="color:var(--muted);">Loading today's schedule...</div>
     </div>
 
     <div class="card">
       <div class="section-title">
-        <span>Today's Lectures (<span id="todayLabel"></span>)</span>
-        <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">Sync</button>
+        <span class="title-left"><span data-icon="clock"></span> Today's Lectures (<span id="todayLabel"></span>)</span>
+        <button class="btn btn-ghost btn-icon-sm" onclick="loadDashboard()" data-tip="Refresh Schedule" data-icon="refresh"></button>
       </div>
       <div id="todayLecturesList"><div class="empty">Loading...</div></div>
     </div>
 
     <div class="card">
-      <div class="section-title">Subject-Wise Attendance</div>
+      <div class="section-title">
+        <span class="title-left"><span data-icon="calendar"></span> Semester Schedule Calendar</span>
+        <div class="sem-inputs">
+          <span style="font-size:0.76rem; color:var(--muted);">Semester:</span>
+          <input type="date" id="homeSemStart" onchange="updateSemesterRange(this.value, null)" title="Semester Start Date" />
+          <span style="color:var(--muted);">–</span>
+          <input type="date" id="homeSemEnd" onchange="updateSemesterRange(null, this.value)" title="Semester End Date" />
+        </div>
+      </div>
+      <div class="cal-workspace">
+        <div>
+          <div id="homeCalendar"></div>
+        </div>
+        <div class="panel-box" id="homeDayPanel">
+          <div class="empty">Select a day on the calendar to inspect its lectures.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <span class="title-left"><span data-icon="barChart"></span> Subject-Wise Attendance</span>
+      </div>
       <div id="attendanceGrid" class="grid-3"><div class="empty">Loading...</div></div>
     </div>
   </section>
 
-  <!-- LMS VIEW -->
+  <!-- ==================== LMS VIEW ==================== -->
   <section id="view-lms" class="view">
     <div class="card">
       <div class="section-title">
-        <span>Select Subject</span>
-        <button class="btn btn-ghost btn-sm" id="refreshDriveBtn" onclick="refreshCurrentDrive()" style="display:none;">🔄 Refresh Files</button>
+        <span class="title-left"><span data-icon="bookOpen"></span> Course Materials</span>
+        <button class="btn btn-ghost btn-icon-sm" id="refreshDriveBtn" onclick="refreshCurrentDrive()" style="display:none;" data-tip="Refresh Drive Folder" data-icon="refresh"></button>
       </div>
       <div id="subjectPills" class="subject-pills"></div>
       <div id="lmsContent">
@@ -230,84 +482,65 @@
     </div>
   </section>
 
-  <!-- COVER-UP VIEW -->
+  <!-- ==================== COVER-UP & CANCEL VIEW ==================== -->
   <section id="view-coverup" class="view">
-    <div class="card">
-      <div class="section-title">Add Cover-Up Lecture</div>
-      <form id="coverupForm" onsubmit="submitCoverup(event)">
-        <div class="form-grid">
-          <div>
-            <label>Subject</label>
-            <select id="cuSubject" required></select>
-          </div>
-          <div>
-            <label>Date</label>
-            <input type="date" id="cuDate" required />
-          </div>
-          <div>
-            <label>Start Time</label>
-            <input type="time" id="cuStart" required />
-          </div>
-          <div>
-            <label>End Time</label>
-            <input type="time" id="cuEnd" required />
-          </div>
-          <div>
-            <label>Note / Location (Optional)</label>
-            <input type="text" id="cuNote" placeholder="e.g. Extra Lab / Hall C" />
-          </div>
-        </div>
-        <div style="margin-top: 14px;">
-          <button type="submit" class="btn btn-primary" id="cuSubmitBtn">Add Cover-Up Lecture</button>
-        </div>
-      </form>
+    <div class="sem-bar">
+      <span class="title-left" style="font-size:0.84rem;">
+        <span data-icon="calendar"></span>
+        <span>Select any date to cancel a regular lecture or schedule a cover-up in a free slot.</span>
+      </span>
+      <div class="sem-inputs">
+        <span style="color:var(--muted);">Semester:</span>
+        <input type="date" id="cuSemStart" onchange="updateSemesterRange(this.value, null)" />
+        <span style="color:var(--muted);">–</span>
+        <input type="date" id="cuSemEnd" onchange="updateSemesterRange(null, this.value)" />
+      </div>
     </div>
 
-    <div class="card">
-      <div class="section-title">Scheduled Cover-Up Lectures</div>
-      <div id="coverupList"><div class="empty">No cover-up lectures added yet.</div></div>
-    </div>
-  </section>
-
-  <!-- CUSTOM / PAST ATTENDANCE VIEW -->
-  <section id="view-custom" class="view">
-    <div class="card">
-      <div class="section-title">Mark Custom / Past Attendance</div>
-      <form id="customAttForm" onsubmit="submitCustomAttendance(event)">
-        <div class="form-grid">
-          <div>
-            <label>Subject</label>
-            <select id="caSubject" required></select>
-          </div>
-          <div>
-            <label>Date</label>
-            <input type="date" id="caDate" required />
-          </div>
-          <div>
-            <label>Time Slot / Label</label>
-            <input type="text" id="caSlot" placeholder="e.g. 08:30-10:30 or Week 2" value="Custom" required />
-          </div>
-          <div>
-            <label>Status</label>
-            <select id="caStatus" required>
-              <option value="Present">Present</option>
-              <option value="Absent">Absent</option>
-            </select>
-          </div>
-          <div>
-            <label>Note (Optional)</label>
-            <input type="text" id="caNote" placeholder="e.g. Marked later" />
-          </div>
-        </div>
-        <div style="margin-top: 14px;">
-          <button type="submit" class="btn btn-primary" id="caSubmitBtn">Save Attendance</button>
-        </div>
-      </form>
+    <div class="cal-workspace" style="margin-bottom:20px;">
+      <div class="card" style="margin-bottom:0;">
+        <div id="coverupCalendar"></div>
+      </div>
+      <div class="panel-box" id="coverupDayPanel">
+        <div class="empty">Select a date on the calendar.</div>
+      </div>
     </div>
 
     <div class="card">
       <div class="section-title">
-        <span>Attendance History</span>
+        <span class="title-left"><span data-icon="calendarPlus"></span> Scheduled Cover-Up Lectures</span>
+      </div>
+      <div id="coverupList"><div class="empty">No cover-up lectures added yet.</div></div>
+    </div>
+  </section>
+
+  <!-- ==================== CUSTOM ATTENDANCE VIEW ==================== -->
+  <section id="view-custom" class="view">
+    <div class="sem-bar">
+      <span class="title-left" style="font-size:0.84rem;">
+        <span data-icon="checkSquare"></span>
+        <span>Click any date &amp; select a scheduled lecture on the semester calendar to mark attendance.</span>
+      </span>
+      <div class="sem-inputs">
+        <span style="color:var(--muted);">Semester:</span>
+        <input type="date" id="attSemStart" onchange="updateSemesterRange(this.value, null)" />
+        <span style="color:var(--muted);">–</span>
+        <input type="date" id="attSemEnd" onchange="updateSemesterRange(null, this.value)" />
+      </div>
+    </div>
+
+    <div class="cal-workspace" style="margin-bottom:20px;">
+      <div class="card" style="margin-bottom:0;">
+        <div id="attendanceCalendar"></div>
+      </div>
+      <div class="panel-box" id="attendanceDayPanel">
+        <div class="empty">Select a date on the calendar to mark attendance for its lectures.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <span class="title-left"><span data-icon="history"></span> Attendance History</span>
         <select id="historyFilter" onchange="renderHistory()" style="width:auto; padding:6px 10px; font-size:0.82rem;">
           <option value="ALL">All Subjects</option>
         </select>
@@ -322,7 +555,7 @@
               <th>Status</th>
               <th>Type</th>
               <th>Note</th>
-              <th>Action</th>
+              <th style="width:52px;"></th>
             </tr>
           </thead>
           <tbody id="historyBody"></tbody>
@@ -336,11 +569,11 @@
 <div class="modal-backdrop" id="previewModal" onclick="if(event.target===this) closePreview()">
   <div class="modal">
     <div class="modal-header">
-      <strong id="previewTitle" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Preview</strong>
-      <div style="display:flex; gap:8px;">
-        <a id="previewDownloadBtn" class="btn btn-primary btn-sm" target="_blank" rel="noopener">Download</a>
-        <a id="previewNewTabBtn" class="btn btn-ghost btn-sm" target="_blank" rel="noopener">Open Tab</a>
-        <button class="btn btn-ghost btn-sm" onclick="closePreview()">✕</button>
+      <strong id="previewTitle" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.92rem;">Preview</strong>
+      <div class="btn-group">
+        <a id="previewDownloadBtn" class="btn btn-primary btn-icon-sm" target="_blank" rel="noopener" data-tip="Download"></a>
+        <a id="previewNewTabBtn" class="btn btn-ghost btn-icon-sm" target="_blank" rel="noopener" data-tip="Open in New Tab"></a>
+        <button class="btn btn-ghost btn-icon-sm" id="previewCloseBtn" onclick="closePreview()" data-tip="Close"></button>
       </div>
     </div>
     <iframe id="previewFrame" allow="autoplay"></iframe>
@@ -351,22 +584,142 @@
 
 <script>
   // ==============================================================
-  // 1. PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW
+  // CONFIG
   // ==============================================================
   const API_URL = "https://script.google.com/macros/s/AKfycbydQKB7CJD7CouvokD4NvbSOT_ZMEvsyVDhDGYzOpBDH-p10L0y0WUGJ1TLYAYqolcLZw/exec";
-  const APP_PIN = ""; // Apps Script eke APP_PIN dammoth meketh eka danna
+  const APP_PIN = "";
 
-  let state = { subjects: [], timetable: [], coverups: [], attendance: [] };
+  // ==============================================================
+  // CRISP VECTOR SVG ICONS (No Emojis)
+  // ==============================================================
+  const SVG_PATHS = {
+    graduationCap: '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+    home: '<path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+    calendarPlus: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="13" x2="12" y2="19"/><line x1="9" y1="16" x2="15" y2="16"/>',
+    checkSquare: '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+    refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+    eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+    externalLink: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+    x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+    check: '<polyline points="20 6 9 17 4 12"/>',
+    trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    ban: '<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>',
+    rotateCcw: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+    lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    mapPin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+    chevronLeft: '<polyline points="15 18 9 12 15 6"/>',
+    chevronRight: '<polyline points="9 18 15 12 9 6"/>',
+    arrowRight: '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+    search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    barChart: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+    bookOpen: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+    history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><polyline points="12 7 12 12 15 15"/>',
+    alertTriangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+    plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    fileText: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+    fileVideo: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polygon points="10 12 16 15 10 18 10 12"/>',
+    fileImage: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+    fileArchive: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12h4v4h-4z"/>',
+    file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'
+  };
+
+  function icon(name, size = 16) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SVG_PATHS[name] || SVG_PATHS.file}</svg>`;
+  }
+
+  function hydrateStaticIcons() {
+    document.getElementById('brandIcon').innerHTML = icon('graduationCap', 19);
+    document.getElementById('topSyncBtn').innerHTML = icon('refresh', 16);
+    document.getElementById('previewDownloadBtn').innerHTML = icon('download', 15);
+    document.getElementById('previewNewTabBtn').innerHTML = icon('externalLink', 15);
+    document.getElementById('previewCloseBtn').innerHTML = icon('x', 15);
+    document.querySelectorAll('[data-icon]').forEach(el => {
+      el.innerHTML = icon(el.getAttribute('data-icon'), 16);
+    });
+  }
+
+  // ==============================================================
+  // STATE
+  // ==============================================================
+  let state = { subjects: [], timetable: [], coverups: [], attendance: [], cancellations: [] };
   let activeSubject = null;
-  let folderStack = []; // Breadcrumbs for subfolders
-  let currentDriveFiles = [];
+  let folderStack = [];
+  let currentDriveFiles = { folders: [], files: [] };
 
-  // --- Utilities ---
+  // Calendar state per view
+  const todayObj = new Date();
+  const calState = {
+    home: { year: todayObj.getFullYear(), month: todayObj.getMonth(), selectedDate: getLocalDateStr(todayObj) },
+    coverup: { year: todayObj.getFullYear(), month: todayObj.getMonth(), selectedDate: getLocalDateStr(todayObj) },
+    attendance: { year: todayObj.getFullYear(), month: todayObj.getMonth(), selectedDate: getLocalDateStr(todayObj), selectedKey: null }
+  };
+
+  // Semester date window (persisted in localStorage, defaults to 6-month window around today)
+  function getDefaultSemStart() {
+    const d = new Date(todayObj.getFullYear(), todayObj.getMonth() - 1, 1);
+    return getLocalDateStr(d);
+  }
+  function getDefaultSemEnd() {
+    const d = new Date(todayObj.getFullYear(), todayObj.getMonth() + 4, 0);
+    return getLocalDateStr(d);
+  }
+  let semesterStart = localStorage.getItem('nexora_sem_start') || getDefaultSemStart();
+  let semesterEnd = localStorage.getItem('nexora_sem_end') || getDefaultSemEnd();
+
+  function syncSemesterInputs() {
+    ['homeSemStart', 'cuSemStart', 'attSemStart'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = semesterStart;
+    });
+    ['homeSemEnd', 'cuSemEnd', 'attSemEnd'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = semesterEnd;
+    });
+  }
+
+  function updateSemesterRange(start, end) {
+    if (start) { semesterStart = start; localStorage.setItem('nexora_sem_start', start); }
+    if (end) { semesterEnd = end; localStorage.setItem('nexora_sem_end', end); }
+    syncSemesterInputs();
+    renderAllCalendars();
+  }
+
+  // Deterministic Subject Colors
+  const SUBJECT_PALETTE = [
+    { bg: 'rgba(99,102,241,0.18)', text: '#a5b4fc', border: 'rgba(99,102,241,0.35)' },
+    { bg: 'rgba(16,185,129,0.18)', text: '#6ee7b7', border: 'rgba(16,185,129,0.35)' },
+    { bg: 'rgba(245,158,11,0.18)', text: '#fcd34d', border: 'rgba(245,158,11,0.35)' },
+    { bg: 'rgba(236,72,153,0.18)', text: '#f9a8d4', border: 'rgba(236,72,153,0.35)' },
+    { bg: 'rgba(14,165,233,0.18)', text: '#7dd3fc', border: 'rgba(14,165,233,0.35)' },
+    { bg: 'rgba(168,85,247,0.18)', text: '#d8b4fe', border: 'rgba(168,85,247,0.35)' },
+    { bg: 'rgba(249,115,22,0.18)', text: '#fdba74', border: 'rgba(249,115,22,0.35)' }
+  ];
+
+  function subjectColor(code) {
+    const idx = state.subjects.findIndex(s => s.SubjectCode === code);
+    if (idx >= 0) return SUBJECT_PALETTE[idx % SUBJECT_PALETTE.length];
+    let hash = 0;
+    for (let i = 0; i < String(code).length; i++) hash = code.charCodeAt(i) + ((hash << 5) - hash);
+    return SUBJECT_PALETTE[Math.abs(hash) % SUBJECT_PALETTE.length];
+  }
+
+  // ==============================================================
+  // UTILITIES
+  // ==============================================================
   function getLocalDateStr(d = new Date()) {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  }
+
+  function parseLocalDate(str) {
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
   }
 
   function getWeekdayName(d = new Date()) {
@@ -410,29 +763,98 @@
 
   function formatBytes(bytes) {
     const b = Number(bytes || 0);
-    if (!b) return 'Google Doc';
+    if (!b) return 'Google Workspace File';
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(b) / Math.log(1024));
     return (b / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
   }
 
-  function fileIcon(mime) {
-    if (!mime) return '📄';
-    if (mime.includes('pdf')) return '📕';
-    if (mime.includes('presentation') || mime.includes('powerpoint')) return '📊';
-    if (mime.includes('spreadsheet') || mime.includes('excel')) return '📗';
-    if (mime.includes('word') || mime.includes('document')) return '📘';
-    if (mime.includes('video')) return '🎬';
-    if (mime.includes('image')) return '🖼️';
-    if (mime.includes('zip') || mime.includes('rar')) return '🗜️';
-    return '📄';
+  function fileIconName(mime) {
+    if (!mime) return 'file';
+    if (mime.includes('video')) return 'fileVideo';
+    if (mime.includes('image')) return 'fileImage';
+    if (mime.includes('zip') || mime.includes('rar') || mime.includes('compressed')) return 'fileArchive';
+    if (mime.includes('pdf') || mime.includes('document') || mime.includes('word') || mime.includes('presentation') || mime.includes('spreadsheet')) return 'fileText';
+    return 'file';
   }
 
-  // --- API Calls (CORS-safe for GitHub Pages + GAS) ---
+  // ==============================================================
+  // SCHEDULE & CONFLICT ENGINE
+  // ==============================================================
+  function isInSemester(dateStr) {
+    if (!semesterStart || !semesterEnd) return true;
+    return dateStr >= semesterStart && dateStr <= semesterEnd;
+  }
+
+  function findAttendance(sessionKey) {
+    return (state.attendance || []).find(a => a.SessionKey === sessionKey);
+  }
+
+  function findCancellation(sessionKey) {
+    return (state.cancellations || []).find(c => c.SessionKey === sessionKey);
+  }
+
+  function getLecturesForDate(dateStr) {
+    const dObj = parseLocalDate(dateStr);
+    const weekday = getWeekdayName(dObj).toLowerCase();
+    const inSem = isInSemester(dateStr);
+
+    const regular = inSem ? (state.timetable || [])
+      .filter(t => t.Day.toLowerCase() === weekday)
+      .map(t => {
+        const key = `${dateStr}_${t.SubjectCode}_${t.StartTime}`;
+        const cancelRec = findCancellation(key);
+        return {
+          date: dateStr,
+          subjectCode: t.SubjectCode,
+          startTime: t.StartTime,
+          endTime: t.EndTime,
+          location: t.Location || '',
+          type: 'Regular',
+          sessionKey: key,
+          isCancelled: Boolean(cancelRec),
+          cancelReason: cancelRec?.Reason || '',
+          attendance: findAttendance(key)
+        };
+      }) : [];
+
+    const coverups = (state.coverups || [])
+      .filter(c => c.Date === dateStr)
+      .map(c => {
+        const key = `${dateStr}_${c.SubjectCode}_${c.StartTime}_CU`;
+        return {
+          date: dateStr,
+          coverupId: c.ID,
+          subjectCode: c.SubjectCode,
+          startTime: c.StartTime,
+          endTime: c.EndTime,
+          location: c.Note || 'Cover-Up Session',
+          type: 'Coverup',
+          sessionKey: key,
+          isCancelled: false,
+          attendance: findAttendance(key)
+        };
+      });
+
+    return [...regular, ...coverups].sort((a, b) => timeToMins(a.startTime) - timeToMins(b.startTime));
+  }
+
+  function getTimeConflicts(dateStr, startTime, endTime) {
+    const s = timeToMins(startTime);
+    const e = timeToMins(endTime);
+    if (!startTime || !endTime || e <= s) return [];
+    return getLecturesForDate(dateStr).filter(lec => {
+      if (lec.isCancelled) return false; // Cancelled slots are free!
+      const ls = timeToMins(lec.startTime);
+      const le = timeToMins(lec.endTime);
+      return s < le && ls < e;
+    });
+  }
+
+  // ==============================================================
+  // API CALLS
+  // ==============================================================
   async function apiGet(params) {
-    if (API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) {
-      throw new Error('Apps Script URL Not Found !');
-    }
     const qs = new URLSearchParams({ ...params, pin: APP_PIN }).toString();
     const res = await fetch(`${API_URL}?${qs}`);
     const json = await res.json();
@@ -441,12 +863,9 @@
   }
 
   async function apiPost(payload) {
-    if (API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) {
-      throw new Error('Apps Script URL Not Found !');
-    }
     const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ ...payload, pin: APP_PIN })
     });
     const json = await res.json();
@@ -454,105 +873,103 @@
     return json.data;
   }
 
-  // --- Tab Navigation ---
+  // ==============================================================
+  // NAVIGATION
+  // ==============================================================
   function switchTab(id, btn) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('view-' + id).classList.add('active');
     if (btn) btn.classList.add('active');
+    else {
+      const target = document.querySelector(`.tab-btn[data-tab="${id}"]`);
+      if (target) target.classList.add('active');
+    }
+    if (id === 'coverup') renderCoverupCalendarAndPanel();
+    if (id === 'custom') renderAttendanceCalendarAndPanel();
   }
 
   function openSubjectMaterials(code) {
-    const lmsBtn = document.querySelectorAll('.tab-btn')[1];
-    switchTab('lms', lmsBtn);
+    switchTab('lms');
     selectSubject(code);
   }
 
-  // --- Load & Render Dashboard ---
+  // ==============================================================
+  // DASHBOARD LOAD
+  // ==============================================================
   async function loadDashboard() {
     try {
-      state = await apiGet({ action: 'getDashboard' });
-      populateSubjectDropdowns();
+      const data = await apiGet({ action: 'getDashboard' });
+      state = {
+        subjects: data.subjects || [],
+        timetable: data.timetable || [],
+        coverups: data.coverups || [],
+        attendance: data.attendance || [],
+        cancellations: data.cancellations || []
+      };
+      populateHistoryFilter();
       renderHome();
       renderSubjectPills();
+      renderAllCalendars();
       renderCoverupList();
       renderHistory();
     } catch (err) {
-      document.getElementById('liveBanner').innerHTML = `<div style="color:#fca5a5;">⚠️ ${escapeHtml(err.message)}</div>`;
+      document.getElementById('liveBanner').innerHTML = `<div style="color:#fca5a5; display:flex; align-items:center; gap:8px;">${icon('alertTriangle', 18)} ${escapeHtml(err.message)}</div>`;
       showToast(err.message);
     }
   }
 
-  function getTodayLectures() {
-    const todayStr = getLocalDateStr();
-    const weekday = getWeekdayName().toLowerCase();
-
-    const regular = state.timetable
-      .filter(t => t.Day.toLowerCase() === weekday)
-      .map(t => ({
-        subjectCode: t.SubjectCode,
-        startTime: t.StartTime,
-        endTime: t.EndTime,
-        location: t.Location || '',
-        type: 'Regular',
-        sessionKey: `${todayStr}_${t.SubjectCode}_${t.StartTime}`
-      }));
-
-    const coverups = state.coverups
-      .filter(c => c.Date === todayStr)
-      .map(c => ({
-        subjectCode: c.SubjectCode,
-        startTime: c.StartTime,
-        endTime: c.EndTime,
-        location: c.Note || 'Cover-Up Session',
-        type: 'Coverup',
-        sessionKey: `${todayStr}_${c.SubjectCode}_${c.StartTime}_CU`
-      }));
-
-    return [...regular, ...coverups].sort((a, b) => timeToMins(a.startTime) - timeToMins(b.startTime));
+  function renderAllCalendars() {
+    renderHomeCalendarAndPanel();
+    renderCoverupCalendarAndPanel();
+    renderAttendanceCalendarAndPanel();
   }
 
-  function findAttendance(sessionKey) {
-    return state.attendance.find(a => a.SessionKey === sessionKey);
-  }
-
+  // ==============================================================
+  // HOME RENDERING
+  // ==============================================================
   function renderHome() {
     const todayStr = getLocalDateStr();
     const weekday = getWeekdayName();
     document.getElementById('todayLabel').textContent = `${weekday}, ${todayStr}`;
 
-    const lectures = getTodayLectures();
+    const allToday = getLecturesForDate(todayStr);
+    const activeToday = allToday.filter(l => !l.isCancelled);
     const mins = nowMins();
 
-    // 1. Live / Next Banner
-    const live = lectures.find(l => mins >= timeToMins(l.startTime) && mins < timeToMins(l.endTime));
-    const next = lectures.find(l => mins < timeToMins(l.startTime));
+    // Live / Next Banner
+    const live = activeToday.find(l => mins >= timeToMins(l.startTime) && mins < timeToMins(l.endTime));
+    const next = activeToday.find(l => mins < timeToMins(l.startTime));
     const banner = document.getElementById('liveBanner');
 
     if (live) {
       const rem = timeToMins(live.endTime) - mins;
-      const att = findAttendance(live.sessionKey);
+      const att = live.attendance;
       banner.className = 'live-banner';
       banner.innerHTML = `
         <div>
-          <span class="badge badge-live">🔴 HAPPENING NOW</span>
-          ${live.type === 'Coverup' ? '<span class="badge badge-coverup" style="margin-left:6px;">COVER-UP</span>' : ''}
-          <h2 style="margin-top:8px;">${escapeHtml(live.subjectCode)} — ${escapeHtml(subjectName(live.subjectCode))}</h2>
-          <div class="lec-meta" style="color:#cbd5e1;">
-            ⏰ ${escapeHtml(live.startTime)} – ${escapeHtml(live.endTime)} (${rem} mins left)
-            ${live.location ? ' • 📍 ' + escapeHtml(live.location) : ''}
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span class="badge badge-live"><span class="pulse-dot"></span> Happening Now</span>
+            ${live.type === 'Coverup' ? '<span class="badge badge-coverup">Cover-Up</span>' : ''}
+          </div>
+          <h2 style="margin-top:9px; font-size:1.25rem;">${escapeHtml(live.subjectCode)} — ${escapeHtml(subjectName(live.subjectCode))}</h2>
+          <div class="lec-meta" style="color:var(--text-2);">
+            <span class="meta-chip">${icon('clock', 14)} <span class="mono">${escapeHtml(live.startTime)} – ${escapeHtml(live.endTime)}</span> (${rem} mins left)</span>
+            ${live.location ? `<span class="meta-chip">${icon('mapPin', 14)} ${escapeHtml(live.location)}</span>` : ''}
           </div>
         </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-present ${att?.Status === 'Present' ? 'selected' : ''}"
-            onclick="markToday('${live.sessionKey}','${live.subjectCode}','${live.startTime}-${live.endTime}','Present','${live.type}')">
-            Present
+        <div class="btn-group">
+          <button class="btn btn-icon btn-present ${att?.Status === 'Present' ? 'selected' : ''}" data-tip="Mark Present"
+            onclick="markLectureAttendance('${live.sessionKey}','${todayStr}','${live.subjectCode}','${live.startTime}-${live.endTime}','Present','${live.type}')">
+            ${icon('check', 17)}
           </button>
-          <button class="btn btn-absent ${att?.Status === 'Absent' ? 'selected' : ''}"
-            onclick="markToday('${live.sessionKey}','${live.subjectCode}','${live.startTime}-${live.endTime}','Absent','${live.type}')">
-            Absent
+          <button class="btn btn-icon btn-absent ${att?.Status === 'Absent' ? 'selected' : ''}" data-tip="Mark Absent"
+            onclick="markLectureAttendance('${live.sessionKey}','${todayStr}','${live.subjectCode}','${live.startTime}-${live.endTime}','Absent','${live.type}')">
+            ${icon('x', 17)}
           </button>
-          <button class="btn btn-ghost" onclick="openSubjectMaterials('${live.subjectCode}')">📂 Materials</button>
+          <button class="btn btn-icon btn-ghost" data-tip="Open Materials" onclick="openSubjectMaterials('${live.subjectCode}')">
+            ${icon('folder', 17)}
+          </button>
         </div>
       `;
     } else if (next) {
@@ -562,70 +979,84 @@
       banner.className = 'live-banner idle';
       banner.innerHTML = `
         <div>
-          <span class="badge badge-up">⏳ NEXT LECTURE TODAY</span>
-          <h3 style="margin-top:8px;">${escapeHtml(next.subjectCode)} — ${escapeHtml(subjectName(next.subjectCode))}</h3>
-          <div class="lec-meta">Starts at ${escapeHtml(next.startTime)} (in ${waitStr}) ${next.location ? '• 📍 ' + escapeHtml(next.location) : ''}</div>
+          <span class="badge badge-up">Next Lecture Today</span>
+          <h3 style="margin-top:8px; font-size:1.1rem;">${escapeHtml(next.subjectCode)} — ${escapeHtml(subjectName(next.subjectCode))}</h3>
+          <div class="lec-meta">
+            <span class="meta-chip">${icon('clock', 14)} Starts at <span class="mono">${escapeHtml(next.startTime)}</span> (in ${waitStr})</span>
+            ${next.location ? `<span class="meta-chip">${icon('mapPin', 14)} ${escapeHtml(next.location)}</span>` : ''}
+          </div>
         </div>
-        <button class="btn btn-ghost" onclick="openSubjectMaterials('${next.subjectCode}')">Open Materials</button>
+        <button class="btn btn-icon btn-ghost" data-tip="Open Materials" onclick="openSubjectMaterials('${next.subjectCode}')">
+          ${icon('folder', 17)}
+        </button>
       `;
     } else {
       banner.className = 'live-banner idle';
       banner.innerHTML = `
         <div>
-          <span class="badge badge-done">ALL CLEAR</span>
-          <h3 style="margin-top:8px;">No ongoing or upcoming lectures left for today.</h3>
-          <div class="lec-meta">Use Cover-Up tab if an extra lecture gets announced.</div>
+          <span class="badge badge-done">All Clear</span>
+          <h3 style="margin-top:8px; font-size:1.05rem;">No ongoing or upcoming lectures remaining today.</h3>
+          <div class="lec-meta">Schedule an extra session from the Cover-Up &amp; Cancel tab if needed.</div>
         </div>
       `;
     }
 
-    // 2. Today's Lectures List
+    // Today's Lectures List
     const listEl = document.getElementById('todayLecturesList');
-    if (lectures.length === 0) {
+    if (allToday.length === 0) {
       listEl.innerHTML = `<div class="empty">No lectures scheduled for ${weekday}.</div>`;
     } else {
-      listEl.innerHTML = lectures.map(l => {
+      listEl.innerHTML = allToday.map(l => {
         const sM = timeToMins(l.startTime);
         const eM = timeToMins(l.endTime);
-        const isLive = mins >= sM && mins < eM;
-        const isEnded = mins >= eM;
-        const canMark = mins >= sM; // Unlocks once lecture time starts
-        const att = findAttendance(l.sessionKey);
+        const isLive = !l.isCancelled && mins >= sM && mins < eM;
+        const isEnded = !l.isCancelled && mins >= eM;
+        const canMark = !l.isCancelled && mins >= sM;
+        const att = l.attendance;
 
         let statusBadge = `<span class="badge badge-up">Upcoming</span>`;
-        if (isLive) statusBadge = `<span class="badge badge-live">🔴 Live Now</span>`;
+        if (l.isCancelled) statusBadge = `<span class="badge badge-cancelled">Cancelled</span>`;
+        else if (isLive) statusBadge = `<span class="badge badge-live"><span class="pulse-dot"></span> Live</span>`;
         else if (isEnded) statusBadge = `<span class="badge badge-done">Ended</span>`;
 
         return `
-          <div class="lec-item ${isLive ? 'is-now' : ''}">
+          <div class="lec-item ${isLive ? 'is-now' : ''} ${l.isCancelled ? 'is-cancelled' : ''}">
             <div>
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                <span class="lec-time">${escapeHtml(l.startTime)} - ${escapeHtml(l.endTime)}</span>
+                <span class="lec-time">${escapeHtml(l.startTime)} – ${escapeHtml(l.endTime)}</span>
                 ${statusBadge}
                 ${l.type === 'Coverup' ? '<span class="badge badge-coverup">Cover-Up</span>' : ''}
               </div>
-              <div style="font-weight:700; margin-top:4px;">${escapeHtml(l.subjectCode)} — ${escapeHtml(subjectName(l.subjectCode))}</div>
-              ${l.location ? `<div class="lec-meta">📍 ${escapeHtml(l.location)}</div>` : ''}
+              <div style="font-weight:700; margin-top:5px; ${l.isCancelled ? 'text-decoration:line-through; color:var(--muted);' : ''}">
+                ${escapeHtml(l.subjectCode)} — ${escapeHtml(subjectName(l.subjectCode))}
+              </div>
+              ${l.location ? `<div class="lec-meta"><span class="meta-chip">${icon('mapPin', 13)} ${escapeHtml(l.location)}</span></div>` : ''}
             </div>
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              ${canMark ? `
-                <button class="btn btn-sm btn-present ${att?.Status === 'Present' ? 'selected' : ''}"
-                  onclick="markToday('${l.sessionKey}','${l.subjectCode}','${l.startTime}-${l.endTime}','Present','${l.type}')">
-                  Present
+            <div class="btn-group">
+              ${l.isCancelled ? '' : (canMark ? `
+                <button class="btn btn-icon-sm btn-present ${att?.Status === 'Present' ? 'selected' : ''}" data-tip="Mark Present"
+                  onclick="markLectureAttendance('${l.sessionKey}','${todayStr}','${l.subjectCode}','${l.startTime}-${l.endTime}','Present','${l.type}')">
+                  ${icon('check', 15)}
                 </button>
-                <button class="btn btn-sm btn-absent ${att?.Status === 'Absent' ? 'selected' : ''}"
-                  onclick="markToday('${l.sessionKey}','${l.subjectCode}','${l.startTime}-${l.endTime}','Absent','${l.type}')">
-                  Absent
+                <button class="btn btn-icon-sm btn-absent ${att?.Status === 'Absent' ? 'selected' : ''}" data-tip="Mark Absent"
+                  onclick="markLectureAttendance('${l.sessionKey}','${todayStr}','${l.subjectCode}','${l.startTime}-${l.endTime}','Absent','${l.type}')">
+                  ${icon('x', 15)}
                 </button>
-              ` : `<button class="btn btn-sm btn-ghost" disabled>🔒 Unlocks at ${escapeHtml(l.startTime)}</button>`}
-              <button class="btn btn-sm btn-ghost" onclick="openSubjectMaterials('${l.subjectCode}')">📂</button>
+              ` : `
+                <button class="btn btn-icon-sm btn-ghost" disabled data-tip="Unlocks at ${escapeHtml(l.startTime)}">
+                  ${icon('lock', 14)}
+                </button>
+              `)}
+              <button class="btn btn-icon-sm btn-ghost" data-tip="Materials" onclick="openSubjectMaterials('${l.subjectCode}')">
+                ${icon('folder', 15)}
+              </button>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    // 3. Subject Attendance Percentages
+    // Subject Attendance Percentages
     const grid = document.getElementById('attendanceGrid');
     if (state.subjects.length === 0) {
       grid.innerHTML = `<div class="empty">Add subjects to the Google Sheet 'Subjects' tab.</div>`;
@@ -636,22 +1067,25 @@
         const total = recs.length;
         const pct = total > 0 ? Math.round((present / total) * 100) : null;
         const color = pct === null ? '#64748b' : pct >= 80 ? 'var(--green)' : pct >= 75 ? 'var(--amber)' : 'var(--red)';
+        const sCol = subjectColor(sub.SubjectCode);
 
         return `
           <div class="att-card">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
               <div>
-                <div style="font-size:0.78rem; color:#818cf8; font-weight:700;">${escapeHtml(sub.SubjectCode)}</div>
-                <div style="font-weight:600; font-size:0.92rem; margin-top:2px;">${escapeHtml(sub.SubjectName)}</div>
+                <span class="mono" style="font-size:0.74rem; font-weight:700; padding:2px 7px; border-radius:6px; background:${sCol.bg}; color:${sCol.text};">${escapeHtml(sub.SubjectCode)}</span>
+                <div style="font-weight:600; font-size:0.9rem; margin-top:7px;">${escapeHtml(sub.SubjectName)}</div>
               </div>
               <div class="att-pct" style="color:${color};">${pct === null ? '—' : pct + '%'}</div>
             </div>
             <div class="progress-track">
               <div class="progress-fill" style="width:${pct || 0}%; background:${color};"></div>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.8rem; color:var(--muted);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:0.8rem; color:var(--muted);">
               <span>${present} / ${total} attended</span>
-              <button class="btn btn-ghost btn-sm" onclick="openSubjectMaterials('${sub.SubjectCode}')">Files</button>
+              <button class="btn btn-icon-sm btn-ghost" data-tip="Open Drive Files" onclick="openSubjectMaterials('${sub.SubjectCode}')">
+                ${icon('folder', 15)}
+              </button>
             </div>
           </div>
         `;
@@ -659,191 +1093,380 @@
     }
   }
 
-  async function markToday(sessionKey, subjectCode, timeSlot, status, type) {
-    showToast(`Saving ${status}...`);
+  // ==============================================================
+  // REUSABLE GRAPHICAL CALENDAR RENDERER
+  // ==============================================================
+  function buildCalendarHtml(mode) {
+    const cfg = calState[mode];
+    const firstDay = new Date(cfg.year, cfg.month, 1);
+    const startDow = firstDay.getDay(); // 0=Sun
+    const daysInMonth = new Date(cfg.year, cfg.month + 1, 0).getDate();
+    const prevMonthDays = new Date(cfg.year, cfg.month, 0).getDate();
+    const todayStr = getLocalDateStr();
+    const monthLabel = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    const cells = [];
+    // Leading days from previous month
+    for (let i = startDow - 1; i >= 0; i--) {
+      const d = new Date(cfg.year, cfg.month - 1, prevMonthDays - i);
+      cells.push({ dateStr: getLocalDateStr(d), dayNum: d.getDate(), otherMonth: true });
+    }
+    // Current month days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(cfg.year, cfg.month, day);
+      cells.push({ dateStr: getLocalDateStr(d), dayNum: day, otherMonth: false });
+    }
+    // Trailing days to complete last week row
+    const rem = (7 - (cells.length % 7)) % 7;
+    for (let i = 1; i <= rem; i++) {
+      const d = new Date(cfg.year, cfg.month + 1, i);
+      cells.push({ dateStr: getLocalDateStr(d), dayNum: d.getDate(), otherMonth: true });
+    }
+
+    const gridHtml = cells.map(c => {
+      const lecs = getLecturesForDate(c.dateStr);
+      const isToday = c.dateStr === todayStr;
+      const isSel = c.dateStr === cfg.selectedDate;
+      const outsideSem = !isInSemester(c.dateStr);
+
+      const chips = lecs.map(l => {
+        const col = subjectColor(l.subjectCode);
+        const dot = l.attendance
+          ? `<span class="att-dot ${l.attendance.Status === 'Present' ? 'present' : 'absent'}"></span>`
+          : '';
+        return `
+          <div class="cal-chip ${l.type === 'Coverup' ? 'is-coverup' : ''} ${l.isCancelled ? 'is-cancelled' : ''}"
+            style="background:${col.bg}; color:${col.text}; border-color:${col.border};"
+            title="${escapeHtml(l.subjectCode)} (${l.startTime}-${l.endTime})${l.isCancelled ? ' [Cancelled]' : ''}">
+            <span>${escapeHtml(l.subjectCode)}</span>
+            ${dot}
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="cal-cell ${c.otherMonth ? 'other-month' : ''} ${outsideSem ? 'outside-sem' : ''} ${isToday ? 'is-today' : ''} ${isSel ? 'is-selected' : ''}"
+          onclick="selectCalendarDate('${mode}', '${c.dateStr}')">
+          <div class="cal-day-num">
+            <span>${c.dayNum}</span>
+            ${lecs.length > 0 ? `<span style="font-size:0.65rem; color:var(--muted);">${lecs.length}</span>` : ''}
+          </div>
+          <div class="cal-chips">${chips}</div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="cal-header">
+        <div class="cal-month-title">${monthLabel}</div>
+        <div class="btn-group">
+          <button class="btn btn-ghost btn-icon-sm" data-tip="Previous Month" onclick="shiftMonth('${mode}', -1)">${icon('chevronLeft', 16)}</button>
+          <button class="btn btn-ghost" style="padding:5px 11px; font-size:0.78rem;" onclick="jumpToToday('${mode}')">Today</button>
+          <button class="btn btn-ghost btn-icon-sm" data-tip="Next Month" onclick="shiftMonth('${mode}', 1)">${icon('chevronRight', 16)}</button>
+        </div>
+      </div>
+      <div class="cal-weekdays">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+      <div class="cal-grid">${gridHtml}</div>
+      <div class="cal-legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--primary-soft); border:1px solid var(--primary);"></span> Regular</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--amber-soft); border:1px dashed var(--amber);"></span> Cover-Up</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--red-soft); border:1px solid rgba(239,68,68,0.4);"></span> Cancelled</span>
+        <span class="legend-item"><span class="att-dot present"></span> Present</span>
+        <span class="legend-item"><span class="att-dot absent"></span> Absent</span>
+      </div>
+    `;
+  }
+
+  function shiftMonth(mode, delta) {
+    const cfg = calState[mode];
+    const d = new Date(cfg.year, cfg.month + delta, 1);
+    cfg.year = d.getFullYear();
+    cfg.month = d.getMonth();
+    if (mode === 'home') renderHomeCalendarAndPanel();
+    if (mode === 'coverup') renderCoverupCalendarAndPanel();
+    if (mode === 'attendance') renderAttendanceCalendarAndPanel();
+  }
+
+  function jumpToToday(mode) {
+    const now = new Date();
+    calState[mode].year = now.getFullYear();
+    calState[mode].month = now.getMonth();
+    calState[mode].selectedDate = getLocalDateStr(now);
+    if (mode === 'attendance') calState.attendance.selectedKey = null;
+    if (mode === 'home') renderHomeCalendarAndPanel();
+    if (mode === 'coverup') renderCoverupCalendarAndPanel();
+    if (mode === 'attendance') renderAttendanceCalendarAndPanel();
+  }
+
+  function selectCalendarDate(mode, dateStr) {
+    const d = parseLocalDate(dateStr);
+    calState[mode].year = d.getFullYear();
+    calState[mode].month = d.getMonth();
+    calState[mode].selectedDate = dateStr;
+    if (mode === 'attendance') calState.attendance.selectedKey = null;
+    if (mode === 'home') renderHomeCalendarAndPanel();
+    if (mode === 'coverup') renderCoverupCalendarAndPanel();
+    if (mode === 'attendance') renderAttendanceCalendarAndPanel();
+  }
+
+  // ==============================================================
+  // 1. HOME CALENDAR + DAY INSPECTOR
+  // ==============================================================
+  function renderHomeCalendarAndPanel() {
+    document.getElementById('homeCalendar').innerHTML = buildCalendarHtml('home');
+    const dateStr = calState.home.selectedDate;
+    const dObj = parseLocalDate(dateStr);
+    const label = dObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+    const lecs = getLecturesForDate(dateStr);
+
+    const panel = document.getElementById('homeDayPanel');
+    let html = `
+      <div class="section-title" style="margin-bottom:12px;">
+        <span class="title-left" style="font-size:0.92rem;">${icon('calendar', 15)} ${escapeHtml(label)}</span>
+      </div>
+    `;
+
+    if (lecs.length === 0) {
+      html += `<div class="empty">No lectures scheduled on this date.</div>`;
+    } else {
+      html += lecs.map(l => `
+        <div class="lec-item ${l.isCancelled ? 'is-cancelled' : ''}" style="padding:12px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span class="lec-time">${escapeHtml(l.startTime)} – ${escapeHtml(l.endTime)}</span>
+              ${l.type === 'Coverup' ? '<span class="badge badge-coverup">Cover-Up</span>' : ''}
+              ${l.isCancelled ? '<span class="badge badge-cancelled">Cancelled</span>' : ''}
+              ${l.attendance ? `<span class="badge ${l.attendance.Status === 'Present' ? 'badge-present' : 'badge-absent'}">${escapeHtml(l.attendance.Status)}</span>` : ''}
+            </div>
+            <div style="font-weight:700; font-size:0.88rem; margin-top:4px; ${l.isCancelled ? 'text-decoration:line-through; color:var(--muted);' : ''}">
+              ${escapeHtml(l.subjectCode)} — ${escapeHtml(subjectName(l.subjectCode))}
+            </div>
+          </div>
+          <button class="btn btn-icon-sm btn-ghost" data-tip="Materials" onclick="openSubjectMaterials('${l.subjectCode}')">
+            ${icon('folder', 15)}
+          </button>
+        </div>
+      `).join('');
+    }
+    panel.innerHTML = html;
+  }
+
+  // ==============================================================
+  // 2. COVER-UP & CANCELLATION CALENDAR + PANEL
+  // ==============================================================
+  function renderCoverupCalendarAndPanel() {
+    document.getElementById('coverupCalendar').innerHTML = buildCalendarHtml('coverup');
+    const dateStr = calState.coverup.selectedDate;
+    const dObj = parseLocalDate(dateStr);
+    const label = dObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const lecs = getLecturesForDate(dateStr);
+
+    const subjectOpts = state.subjects.map(s =>
+      `<option value="${escapeHtml(s.SubjectCode)}">${escapeHtml(s.SubjectCode)} — ${escapeHtml(s.SubjectName)}</option>`
+    ).join('');
+
+    const panel = document.getElementById('coverupDayPanel');
+    const existingList = lecs.length === 0
+      ? `<div class="empty" style="padding:10px 0;">No lectures on this date — all time slots are free.</div>`
+      : lecs.map(l => `
+          <div class="lec-item ${l.isCancelled ? 'is-cancelled' : ''}" style="padding:11px 12px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span class="lec-time">${escapeHtml(l.startTime)} – ${escapeHtml(l.endTime)}</span>
+                ${l.type === 'Coverup' ? '<span class="badge badge-coverup">Cover-Up</span>' : ''}
+                ${l.isCancelled ? '<span class="badge badge-cancelled">Cancelled</span>' : ''}
+              </div>
+              <div style="font-weight:700; font-size:0.86rem; margin-top:4px; ${l.isCancelled ? 'text-decoration:line-through; color:var(--muted);' : ''}">
+                ${escapeHtml(l.subjectCode)} — ${escapeHtml(subjectName(l.subjectCode))}
+              </div>
+            </div>
+            <div class="btn-group">
+              ${l.type === 'Regular' ? (l.isCancelled ? `
+                <button class="btn btn-icon-sm btn-present" data-tip="Restore Lecture"
+                  onclick="restoreLecture('${l.sessionKey}')">
+                  ${icon('rotateCcw', 15)}
+                </button>
+              ` : `
+                <button class="btn btn-icon-sm btn-warn" data-tip="Cancel Lecture"
+                  onclick="cancelLecture('${l.sessionKey}','${dateStr}','${l.subjectCode}','${l.startTime}-${l.endTime}')">
+                  ${icon('ban', 15)}
+                </button>
+              `) : `
+                <button class="btn btn-icon-sm btn-danger-ghost" data-tip="Delete Cover-Up"
+                  onclick="deleteCoverup('${l.coverupId}')">
+                  ${icon('trash', 15)}
+                </button>
+              `}
+            </div>
+          </div>
+        `).join('');
+
+    panel.innerHTML = `
+      <div class="section-title" style="margin-bottom:10px;">
+        <span class="title-left" style="font-size:0.92rem;">${icon('calendar', 15)} ${escapeHtml(label)}</span>
+      </div>
+      <div style="font-size:0.75rem; color:var(--muted); margin-bottom:10px;">
+        Scheduled slots for this date (cancel an existing lecture to free its slot):
+      </div>
+      ${existingList}
+
+      <div class="divider"></div>
+
+      <div class="section-title" style="margin-bottom:12px;">
+        <span class="title-left" style="font-size:0.9rem;">${icon('calendarPlus', 15)} Add Cover-Up on ${escapeHtml(dateStr)}</span>
+      </div>
+      <form id="coverupForm" onsubmit="submitCoverup(event)">
+        <div class="form-grid">
+          <div style="grid-column: 1 / -1;">
+            <label>Subject</label>
+            <select id="cuSubject" required>${subjectOpts}</select>
+          </div>
+          <div>
+            <label>Start Time</label>
+            <input type="time" id="cuStart" required oninput="checkCoverupConflictUI()" />
+          </div>
+          <div>
+            <label>End Time</label>
+            <input type="time" id="cuEnd" required oninput="checkCoverupConflictUI()" />
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <label>Note / Hall (Optional)</label>
+            <input type="text" id="cuNote" placeholder="e.g. Extra Lab / Hall C" />
+          </div>
+        </div>
+        <div id="cuConflictArea"></div>
+        <div style="margin-top:14px;">
+          <button type="submit" class="btn btn-primary" id="cuSubmitBtn" style="width:100%;">
+            ${icon('plus', 16)} Add Cover-Up Lecture
+          </button>
+        </div>
+      </form>
+    `;
+  }
+
+  function checkCoverupConflictUI() {
+    const dateStr = calState.coverup.selectedDate;
+    const start = document.getElementById('cuStart')?.value;
+    const end = document.getElementById('cuEnd')?.value;
+    const area = document.getElementById('cuConflictArea');
+    const btn = document.getElementById('cuSubmitBtn');
+    if (!area || !btn) return true;
+
+    if (!start || !end) {
+      area.innerHTML = '';
+      btn.disabled = false;
+      return true;
+    }
+
+    if (timeToMins(end) <= timeToMins(start)) {
+      area.innerHTML = `<div class="conflict-box">End time must be after start time.</div>`;
+      btn.disabled = true;
+      return false;
+    }
+
+    const conflicts = getTimeConflicts(dateStr, start, end);
+    if (conflicts.length > 0) {
+      const items = conflicts.map(c => `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; padding-top:8px; border-top:1px solid rgba(239,68,68,0.25);">
+          <span><strong>${escapeHtml(c.subjectCode)}</strong> (<span class="mono">${c.startTime}–${c.endTime}</span>)</span>
+          ${c.type === 'Regular' ? `
+            <button type="button" class="btn btn-icon-sm btn-warn" data-tip="Cancel This Lecture to Free Slot"
+              onclick="cancelLecture('${c.sessionKey}','${dateStr}','${c.subjectCode}','${c.startTime}-${c.endTime}')">
+              ${icon('ban', 14)}
+            </button>
+          ` : `
+            <button type="button" class="btn btn-icon-sm btn-danger-ghost" data-tip="Delete Conflicting Cover-Up"
+              onclick="deleteCoverup('${c.coverupId}')">
+              ${icon('trash', 14)}
+            </button>
+          `}
+        </div>
+      `).join('');
+
+      area.innerHTML = `
+        <div class="conflict-box">
+          <div style="display:flex; align-items:center; gap:6px; font-weight:700;">
+            ${icon('alertTriangle', 15)} Time Slot Occupied
+          </div>
+          <div style="margin-top:4px; color:#fca5a5;">
+            Cancel the overlapping lecture first to add a cover-up in this time slot:
+          </div>
+          ${items}
+        </div>
+      `;
+      btn.disabled = true;
+      return false;
+    }
+
+    area.innerHTML = '';
+    btn.disabled = false;
+    return true;
+  }
+
+  async function cancelLecture(sessionKey, date, subjectCode, timeSlot) {
+    showToast('Cancelling lecture...');
     try {
-      state = await apiPost({
-        action: 'markAttendance',
-        sessionKey,
-        date: getLocalDateStr(),
-        subjectCode,
-        timeSlot,
-        status,
-        type,
-        note: ''
-      });
+      const data = await apiPost({ action: 'cancelLecture', sessionKey, date, subjectCode, timeSlot, reason: 'Cancelled' });
+      state = { ...state, ...data };
       renderHome();
-      renderHistory();
-      showToast(`Marked ${status} for ${subjectCode} ✓`);
+      renderAllCalendars();
+      showToast(`${subjectCode} marked as cancelled`);
     } catch (err) {
       showToast('Error: ' + err.message);
     }
   }
 
-  // --- LMS / Google Drive ---
-  function renderSubjectPills() {
-    const el = document.getElementById('subjectPills');
-    el.innerHTML = state.subjects.map(s => `
-      <button class="pill ${activeSubject?.SubjectCode === s.SubjectCode ? 'active' : ''}"
-        onclick="selectSubject('${s.SubjectCode}')">
-        ${escapeHtml(s.SubjectCode)} — ${escapeHtml(s.SubjectName)}
-      </button>
-    `).join('');
-  }
-
-  async function selectSubject(code) {
-    const sub = state.subjects.find(s => s.SubjectCode === code);
-    if (!sub) return;
-    activeSubject = sub;
-    renderSubjectPills();
-    document.getElementById('refreshDriveBtn').style.display = 'inline-flex';
-    folderStack = [{ name: sub.SubjectCode, ref: sub.DriveLink }];
-    await loadDriveFolder(sub.DriveLink);
-  }
-
-  async function openSubfolder(folderId, folderName) {
-    folderStack.push({ name: folderName, ref: folderId });
-    await loadDriveFolder(folderId);
-  }
-
-  async function navigateCrumb(index) {
-    folderStack = folderStack.slice(0, index + 1);
-    await loadDriveFolder(folderStack[index].ref);
-  }
-
-  async function refreshCurrentDrive() {
-    if (!folderStack.length) return;
-    await loadDriveFolder(folderStack[folderStack.length - 1].ref);
-  }
-
-  async function loadDriveFolder(folderRef) {
-    const container = document.getElementById('lmsContent');
-    if (!folderRef || folderRef.includes('PASTE_DRIVE_FOLDER')) {
-      container.innerHTML = `<div class="empty">No Drive folder link set for this subject !</div>`;
-      return;
-    }
-    container.innerHTML = `<div class="empty">Fetching latest files from Google Drive...</div>`;
+  async function restoreLecture(sessionKey) {
+    showToast('Restoring lecture...');
     try {
-      const data = await apiGet({ action: 'getDriveFiles', folderUrl: folderRef });
-      currentDriveFiles = data;
-      renderDriveList('');
+      const data = await apiPost({ action: 'restoreLecture', sessionKey });
+      state = { ...state, ...data };
+      renderHome();
+      renderAllCalendars();
+      showToast('Lecture restored');
     } catch (err) {
-      container.innerHTML = `<div class="empty" style="color:#fca5a5;">⚠️ ${escapeHtml(err.message)}</div>`;
+      showToast('Error: ' + err.message);
     }
-  }
-
-  function renderDriveList(query) {
-    const container = document.getElementById('lmsContent');
-    const q = query.trim().toLowerCase();
-    const folders = (currentDriveFiles.folders || []).filter(f => f.name.toLowerCase().includes(q));
-    const files = (currentDriveFiles.files || []).filter(f => f.name.toLowerCase().includes(q));
-
-    const crumbsHtml = folderStack.map((c, idx) => `
-      <span class="crumb" onclick="navigateCrumb(${idx})">${escapeHtml(c.name)}</span>
-      ${idx < folderStack.length - 1 ? '<span>/</span>' : ''}
-    `).join('');
-
-    let html = `
-      <div class="breadcrumbs">📁 ${crumbsHtml}</div>
-      <div style="margin-bottom:14px;">
-        <input type="text" placeholder="🔍 Search files or folders..." value="${escapeHtml(query)}"
-          oninput="renderDriveList(this.value)" />
-      </div>
-    `;
-
-    if (folders.length === 0 && files.length === 0) {
-      html += `<div class="empty">No files found in this folder.</div>`;
-    } else {
-      folders.forEach(f => {
-        html += `
-          <div class="file-row" style="cursor:pointer;" onclick="openSubfolder('${f.id}', '${escapeHtml(f.name).replace(/'/g, "\\'")}')">
-            <div>
-              <div class="file-name">📁 ${escapeHtml(f.name)}</div>
-              <div class="lec-meta">Folder • Updated ${new Date(f.updated).toLocaleDateString()}</div>
-            </div>
-            <button class="btn btn-ghost btn-sm">Open →</button>
-          </div>
-        `;
-      });
-
-      files.forEach(f => {
-        html += `
-          <div class="file-row">
-            <div style="flex:1; min-width:200px;">
-              <div class="file-name">${fileIcon(f.mimeType)} ${escapeHtml(f.name)}</div>
-              <div class="lec-meta">${formatBytes(f.size)} • Updated ${new Date(f.updated).toLocaleString()}</div>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <button class="btn btn-ghost btn-sm"
-                onclick="openPreview('${escapeHtml(f.name).replace(/'/g, "\\'")}', '${f.previewUrl}', '${f.downloadUrl}')">
-                Preview
-              </button>
-              <a class="btn btn-primary btn-sm" href="${f.downloadUrl}" target="_blank" rel="noopener">
-                Download
-              </a>
-            </div>
-          </div>
-        `;
-      });
-    }
-    container.innerHTML = html;
-  }
-
-  function openPreview(name, previewUrl, downloadUrl) {
-    document.getElementById('previewTitle').textContent = name;
-    document.getElementById('previewFrame').src = previewUrl;
-    document.getElementById('previewDownloadBtn').href = downloadUrl;
-    document.getElementById('previewNewTabBtn').href = previewUrl;
-    document.getElementById('previewModal').classList.add('open');
-  }
-
-  function closePreview() {
-    document.getElementById('previewModal').classList.remove('open');
-    document.getElementById('previewFrame').src = '';
-  }
-
-  // --- Cover-Up Lectures ---
-  function populateSubjectDropdowns() {
-    const opts = state.subjects.map(s =>
-      `<option value="${escapeHtml(s.SubjectCode)}">${escapeHtml(s.SubjectCode)} — ${escapeHtml(s.SubjectName)}</option>`
-    ).join('');
-    document.getElementById('cuSubject').innerHTML = opts;
-    document.getElementById('caSubject').innerHTML = opts;
-    document.getElementById('historyFilter').innerHTML = `<option value="ALL">All Subjects</option>` + opts;
   }
 
   async function submitCoverup(e) {
     e.preventDefault();
+    if (!checkCoverupConflictUI()) return;
+
     const btn = document.getElementById('cuSubmitBtn');
-    btn.disabled = true; btn.textContent = 'Saving...';
+    const dateStr = calState.coverup.selectedDate;
+    btn.disabled = true;
     try {
-      state = await apiPost({
+      const data = await apiPost({
         action: 'addCoverup',
         subjectCode: document.getElementById('cuSubject').value,
-        date: document.getElementById('cuDate').value,
+        date: dateStr,
         startTime: document.getElementById('cuStart').value,
         endTime: document.getElementById('cuEnd').value,
         note: document.getElementById('cuNote').value
       });
-      e.target.reset();
-      document.getElementById('cuDate').value = getLocalDateStr();
+      state = { ...state, ...data };
       renderHome();
+      renderAllCalendars();
       renderCoverupList();
-      showToast('Cover-up lecture added ✓');
+      showToast('Cover-up lecture added');
     } catch (err) {
       showToast('Error: ' + err.message);
-    } finally {
-      btn.disabled = false; btn.textContent = 'Add Cover-Up Lecture';
+      btn.disabled = false;
     }
   }
 
   async function deleteCoverup(id) {
     if (!confirm('Delete this cover-up lecture?')) return;
     try {
-      state = await apiPost({ action: 'deleteCoverup', id });
+      const data = await apiPost({ action: 'deleteCoverup', id });
+      state = { ...state, ...data };
       renderHome();
+      renderAllCalendars();
       renderCoverupList();
-      showToast('Deleted ✓');
+      showToast('Cover-up deleted');
     } catch (err) {
       showToast('Error: ' + err.message);
     }
@@ -859,57 +1482,164 @@
     el.innerHTML = list.map(c => `
       <div class="lec-item">
         <div>
-          <span class="badge badge-coverup">${escapeHtml(c.Date)}</span>
-          <span class="lec-time" style="margin-left:8px;">${escapeHtml(c.StartTime)} – ${escapeHtml(c.EndTime)}</span>
-          <div style="font-weight:700; margin-top:4px;">${escapeHtml(c.SubjectCode)} — ${escapeHtml(subjectName(c.SubjectCode))}</div>
-          ${c.Note ? `<div class="lec-meta">📝 ${escapeHtml(c.Note)}</div>` : ''}
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span class="badge badge-coverup mono">${escapeHtml(c.Date)}</span>
+            <span class="lec-time">${escapeHtml(c.StartTime)} – ${escapeHtml(c.EndTime)}</span>
+          </div>
+          <div style="font-weight:700; margin-top:5px;">${escapeHtml(c.SubjectCode)} — ${escapeHtml(subjectName(c.SubjectCode))}</div>
+          ${c.Note ? `<div class="lec-meta"><span class="meta-chip">${icon('mapPin', 13)} ${escapeHtml(c.Note)}</span></div>` : ''}
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="deleteCoverup('${c.ID}')">🗑️ Delete</button>
+        <button class="btn btn-icon-sm btn-danger-ghost" data-tip="Delete" onclick="deleteCoverup('${c.ID}')">
+          ${icon('trash', 15)}
+        </button>
       </div>
     `).join('');
   }
 
-  // --- Custom / Past Attendance ---
-  async function submitCustomAttendance(e) {
-    e.preventDefault();
-    const btn = document.getElementById('caSubmitBtn');
-    btn.disabled = true; btn.textContent = 'Saving...';
-    const date = document.getElementById('caDate').value;
-    const sub = document.getElementById('caSubject').value;
-    const slot = document.getElementById('caSlot').value.trim();
-    const sessionKey = `${date}_${sub}_${slot}_${Date.now()}`;
+  // ==============================================================
+  // 3. CUSTOM ATTENDANCE CALENDAR + LECTURE SELECTOR PANEL
+  // ==============================================================
+  function renderAttendanceCalendarAndPanel() {
+    document.getElementById('attendanceCalendar').innerHTML = buildCalendarHtml('attendance');
+    const dateStr = calState.attendance.selectedDate;
+    const dObj = parseLocalDate(dateStr);
+    const label = dObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const lecs = getLecturesForDate(dateStr);
+    const activeLecs = lecs.filter(l => !l.isCancelled);
 
+    if (activeLecs.length > 0 && !activeLecs.some(l => l.sessionKey === calState.attendance.selectedKey)) {
+      calState.attendance.selectedKey = activeLecs[0].sessionKey;
+    }
+
+    const panel = document.getElementById('attendanceDayPanel');
+    let html = `
+      <div class="section-title" style="margin-bottom:10px;">
+        <span class="title-left" style="font-size:0.92rem;">${icon('checkSquare', 15)} ${escapeHtml(label)}</span>
+      </div>
+    `;
+
+    if (lecs.length === 0) {
+      html += `<div class="empty">No scheduled lectures on this date. Select a date with lectures on the calendar.</div>`;
+      panel.innerHTML = html;
+      return;
+    }
+
+    html += `<div style="font-size:0.76rem; color:var(--muted); margin-bottom:10px;">Select a scheduled lecture to mark or update attendance:</div>`;
+
+    html += lecs.map(l => {
+      const isSel = calState.attendance.selectedKey === l.sessionKey && !l.isCancelled;
+      const att = l.attendance;
+      return `
+        <div class="lec-item ${l.isCancelled ? 'is-cancelled' : ''} ${isSel ? 'is-selected' : ''}"
+          style="padding:12px; ${l.isCancelled ? '' : 'cursor:pointer;'}"
+          ${l.isCancelled ? '' : `onclick="selectAttendanceLecture('${l.sessionKey}')"`}>
+          <div>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span class="lec-time">${escapeHtml(l.startTime)} – ${escapeHtml(l.endTime)}</span>
+              ${l.type === 'Coverup' ? '<span class="badge badge-coverup">Cover-Up</span>' : ''}
+              ${l.isCancelled ? '<span class="badge badge-cancelled">Cancelled</span>' : ''}
+              ${att ? `<span class="badge ${att.Status === 'Present' ? 'badge-present' : 'badge-absent'}">${escapeHtml(att.Status)}</span>` : ''}
+            </div>
+            <div style="font-weight:700; font-size:0.86rem; margin-top:4px; ${l.isCancelled ? 'text-decoration:line-through; color:var(--muted);' : ''}">
+              ${escapeHtml(l.subjectCode)} — ${escapeHtml(subjectName(l.subjectCode))}
+            </div>
+          </div>
+          ${l.isCancelled ? '' : `
+            <div class="btn-group" onclick="event.stopPropagation()">
+              <button class="btn btn-icon-sm btn-present ${att?.Status === 'Present' ? 'selected' : ''}" data-tip="Mark Present"
+                onclick="markLectureAttendance('${l.sessionKey}','${dateStr}','${l.subjectCode}','${l.startTime}-${l.endTime}','Present','${l.type}', document.getElementById('attNoteInput')?.value || '')">
+                ${icon('check', 15)}
+              </button>
+              <button class="btn btn-icon-sm btn-absent ${att?.Status === 'Absent' ? 'selected' : ''}" data-tip="Mark Absent"
+                onclick="markLectureAttendance('${l.sessionKey}','${dateStr}','${l.subjectCode}','${l.startTime}-${l.endTime}','Absent','${l.type}', document.getElementById('attNoteInput')?.value || '')">
+                ${icon('x', 15)}
+              </button>
+              ${att ? `
+                <button class="btn btn-icon-sm btn-danger-ghost" data-tip="Clear Record"
+                  onclick="deleteAttendance('${l.sessionKey}')">
+                  ${icon('trash', 14)}
+                </button>
+              ` : ''}
+            </div>
+          `}
+        </div>
+      `;
+    }).join('');
+
+    const selectedLec = activeLecs.find(l => l.sessionKey === calState.attendance.selectedKey);
+    if (selectedLec) {
+      const existingNote = selectedLec.attendance?.Note || '';
+      html += `
+        <div class="divider"></div>
+        <div>
+          <label>Optional Note for ${escapeHtml(selectedLec.subjectCode)} (${escapeHtml(selectedLec.startTime)}–${escapeHtml(selectedLec.endTime)})</label>
+          <input type="text" id="attNoteInput" value="${escapeHtml(existingNote)}" placeholder="e.g. Attended online / Medical" />
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
+            <button class="btn btn-present ${selectedLec.attendance?.Status === 'Present' ? 'selected' : ''}"
+              onclick="markLectureAttendance('${selectedLec.sessionKey}','${dateStr}','${selectedLec.subjectCode}','${selectedLec.startTime}-${selectedLec.endTime}','Present','${selectedLec.type}', document.getElementById('attNoteInput').value)">
+              ${icon('check', 16)} Present
+            </button>
+            <button class="btn btn-absent ${selectedLec.attendance?.Status === 'Absent' ? 'selected' : ''}"
+              onclick="markLectureAttendance('${selectedLec.sessionKey}','${dateStr}','${selectedLec.subjectCode}','${selectedLec.startTime}-${selectedLec.endTime}','Absent','${selectedLec.type}', document.getElementById('attNoteInput').value)">
+              ${icon('x', 16)} Absent
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    panel.innerHTML = html;
+  }
+
+  function selectAttendanceLecture(sessionKey) {
+    calState.attendance.selectedKey = sessionKey;
+    renderAttendanceCalendarAndPanel();
+  }
+
+  async function markLectureAttendance(sessionKey, date, subjectCode, timeSlot, status, type, note = '') {
+    showToast(`Saving ${status}...`);
     try {
-      state = await apiPost({
+      const data = await apiPost({
         action: 'markAttendance',
         sessionKey,
         date,
-        subjectCode: sub,
-        timeSlot: slot,
-        status: document.getElementById('caStatus').value,
-        type: 'Custom',
-        note: document.getElementById('caNote').value
+        subjectCode,
+        timeSlot,
+        status,
+        type,
+        note
       });
+      state = { ...state, ...data };
       renderHome();
+      renderAllCalendars();
       renderHistory();
-      showToast('Custom attendance saved ✓');
+      showToast(`Marked ${status} for ${subjectCode}`);
     } catch (err) {
       showToast('Error: ' + err.message);
-    } finally {
-      btn.disabled = false; btn.textContent = 'Save Attendance';
     }
   }
 
   async function deleteAttendance(sessionKey) {
     if (!confirm('Remove this attendance record?')) return;
     try {
-      state = await apiPost({ action: 'deleteAttendance', sessionKey });
+      const data = await apiPost({ action: 'deleteAttendance', sessionKey });
+      state = { ...state, ...data };
       renderHome();
+      renderAllCalendars();
       renderHistory();
-      showToast('Record removed ✓');
+      showToast('Record removed');
     } catch (err) {
       showToast('Error: ' + err.message);
     }
+  }
+
+  function populateHistoryFilter() {
+    const sel = document.getElementById('historyFilter');
+    const prev = sel.value || 'ALL';
+    sel.innerHTML = `<option value="ALL">All Subjects</option>` + state.subjects.map(s =>
+      `<option value="${escapeHtml(s.SubjectCode)}">${escapeHtml(s.SubjectCode)} — ${escapeHtml(s.SubjectName)}</option>`
+    ).join('');
+    sel.value = prev;
   }
 
   function renderHistory() {
@@ -925,30 +1655,176 @@
     }
     body.innerHTML = rows.map(a => `
       <tr>
-        <td>${escapeHtml(a.Date)}</td>
+        <td class="mono">${escapeHtml(a.Date)}</td>
         <td><strong>${escapeHtml(a.SubjectCode)}</strong></td>
-        <td>${escapeHtml(a.TimeSlot)}</td>
+        <td class="mono">${escapeHtml(a.TimeSlot)}</td>
         <td><span class="badge ${a.Status === 'Present' ? 'badge-present' : 'badge-absent'}">${escapeHtml(a.Status)}</span></td>
         <td>${escapeHtml(a.Type)}</td>
         <td style="color:var(--muted);">${escapeHtml(a.Note)}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="deleteAttendance('${escapeHtml(a.SessionKey)}')">🗑️</button></td>
+        <td>
+          <button class="btn btn-icon-sm btn-danger-ghost" data-tip="Delete" onclick="deleteAttendance('${escapeHtml(a.SessionKey)}')">
+            ${icon('trash', 14)}
+          </button>
+        </td>
       </tr>
     `).join('');
   }
 
-  // --- Clock & Auto-Refresh UI every minute ---
+  // ==============================================================
+  // LMS / GOOGLE DRIVE
+  // ==============================================================
+  function renderSubjectPills() {
+    const el = document.getElementById('subjectPills');
+    el.innerHTML = state.subjects.map(s => `
+      <button class="pill ${activeSubject?.SubjectCode === s.SubjectCode ? 'active' : ''}"
+        onclick="selectSubject('${s.SubjectCode}')">
+        <span class="mono" style="margin-right:4px;">${escapeHtml(s.SubjectCode)}</span> ${escapeHtml(s.SubjectName)}
+      </button>
+    `).join('');
+  }
+
+  async function selectSubject(code) {
+    const sub = state.subjects.find(s => s.SubjectCode === code);
+    if (!sub) return;
+    activeSubject = sub;
+    renderSubjectPills();
+    document.getElementById('refreshDriveBtn').style.display = 'inline-flex';
+    folderStack = [{ name: sub.SubjectCode, ref: sub.DriveLink }];
+    await loadDriveFolder(sub.DriveLink);
+  }
+
+  async function openSubfolder(idx) {
+    const f = currentDriveFiles.folders[idx];
+    if (!f) return;
+    folderStack.push({ name: f.name, ref: f.id });
+    await loadDriveFolder(f.id);
+  }
+
+  async function navigateCrumb(index) {
+    folderStack = folderStack.slice(0, index + 1);
+    await loadDriveFolder(folderStack[index].ref);
+  }
+
+  async function refreshCurrentDrive() {
+    if (!folderStack.length) return;
+    await loadDriveFolder(folderStack[folderStack.length - 1].ref);
+  }
+
+  async function loadDriveFolder(folderRef) {
+    const container = document.getElementById('lmsContent');
+    if (!folderRef || folderRef.includes('PASTE_DRIVE_FOLDER')) {
+      container.innerHTML = `<div class="empty">No Drive folder link set for this subject in Google Sheets.</div>`;
+      return;
+    }
+    container.innerHTML = `<div class="empty">Fetching latest files from Google Drive...</div>`;
+    try {
+      const data = await apiGet({ action: 'getDriveFiles', folderUrl: folderRef });
+      currentDriveFiles = data;
+      renderDriveShell();
+      renderDriveItems('');
+    } catch (err) {
+      container.innerHTML = `<div class="empty" style="color:#fca5a5;">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function renderDriveShell() {
+    const crumbsHtml = folderStack.map((c, idx) => `
+      <span class="crumb" onclick="navigateCrumb(${idx})">${escapeHtml(c.name)}</span>
+      ${idx < folderStack.length - 1 ? '<span>/</span>' : ''}
+    `).join('');
+
+    document.getElementById('lmsContent').innerHTML = `
+      <div class="breadcrumbs">${icon('folder', 15)} ${crumbsHtml}</div>
+      <div class="search-wrap">
+        ${icon('search', 15)}
+        <input type="text" id="driveSearchInput" placeholder="Search files or folders..." oninput="renderDriveItems(this.value)" />
+      </div>
+      <div id="driveItemsList"></div>
+    `;
+  }
+
+  function renderDriveItems(query) {
+    const listEl = document.getElementById('driveItemsList');
+    if (!listEl) return;
+    const q = query.trim().toLowerCase();
+    const folders = (currentDriveFiles.folders || []).map((f, i) => ({ ...f, _idx: i })).filter(f => f.name.toLowerCase().includes(q));
+    const files = (currentDriveFiles.files || []).map((f, i) => ({ ...f, _idx: i })).filter(f => f.name.toLowerCase().includes(q));
+
+    if (folders.length === 0 && files.length === 0) {
+      listEl.innerHTML = `<div class="empty">No files found in this folder.</div>`;
+      return;
+    }
+
+    let html = '';
+    folders.forEach(f => {
+      html += `
+        <div class="file-row" style="cursor:pointer;" onclick="openSubfolder(${f._idx})">
+          <div class="file-info">
+            <div class="file-icon-box">${icon('folder', 18)}</div>
+            <div>
+              <div class="file-name">${escapeHtml(f.name)}</div>
+              <div class="lec-meta">Folder • Updated ${new Date(f.updated).toLocaleDateString()}</div>
+            </div>
+          </div>
+          <button class="btn btn-icon-sm btn-ghost" data-tip="Open Folder">${icon('arrowRight', 15)}</button>
+        </div>
+      `;
+    });
+
+    files.forEach(f => {
+      html += `
+        <div class="file-row">
+          <div class="file-info">
+            <div class="file-icon-box">${icon(fileIconName(f.mimeType), 18)}</div>
+            <div>
+              <div class="file-name">${escapeHtml(f.name)}</div>
+              <div class="lec-meta">${formatBytes(f.size)} • Updated ${new Date(f.updated).toLocaleString()}</div>
+            </div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-icon-sm btn-ghost" data-tip="Preview" onclick="openPreviewByIdx(${f._idx})">
+              ${icon('eye', 15)}
+            </button>
+            <a class="btn btn-icon-sm btn-primary" data-tip="Download" href="${f.downloadUrl}" target="_blank" rel="noopener">
+              ${icon('download', 15)}
+            </a>
+          </div>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+  }
+
+  function openPreviewByIdx(idx) {
+    const f = currentDriveFiles.files[idx];
+    if (!f) return;
+    document.getElementById('previewTitle').textContent = f.name;
+    document.getElementById('previewFrame').src = f.previewUrl;
+    document.getElementById('previewDownloadBtn').href = f.downloadUrl;
+    document.getElementById('previewNewTabBtn').href = f.previewUrl;
+    document.getElementById('previewModal').classList.add('open');
+  }
+
+  function closePreview() {
+    document.getElementById('previewModal').classList.remove('open');
+    document.getElementById('previewFrame').src = '';
+  }
+
+  // ==============================================================
+  // CLOCK & INIT
+  // ==============================================================
   function updateClock() {
     const now = new Date();
     document.getElementById('liveClock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     document.getElementById('liveDate').textContent = now.toLocaleDateString([], { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
   }
 
-  document.getElementById('cuDate').value = getLocalDateStr();
-  document.getElementById('caDate').value = getLocalDateStr();
+  hydrateStaticIcons();
+  syncSemesterInputs();
   updateClock();
   setInterval(updateClock, 1000);
-  setInterval(() => { if (state.subjects.length) renderHome(); }, 30000); // Live lecture status auto-updates!
-
+  setInterval(() => { if (state.subjects.length) renderHome(); }, 30000);
   loadDashboard();
 </script>
 </body>
